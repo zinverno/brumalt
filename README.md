@@ -4,7 +4,7 @@
 
 Brumalt is a free, offline Obsidian plugin with quick memory and logic games, adaptive difficulty, gentle daily goals, and personal progress tracking.
 
-**[Русский](README.ru.md)** · [Download 0.3.4](https://github.com/zinverno/brumalt/releases/tag/0.3.4) · MIT · by **Zinvernix**
+**[Русский](README.ru.md)** · [Download 0.3.5](https://github.com/zinverno/brumalt/releases/tag/0.3.5) · MIT · by **Zinvernix**
 
 - Six games in one small window over your current note.
 - Approximate 1 / 3 / 5 minute sessions, or a single game of your choice.
@@ -18,7 +18,7 @@ Brumalt is for intellectual recreation and practice in these particular exercise
 
 Start in a disposable test vault. Requires Obsidian **1.13.0+** for searchable declarative settings. Brumalt 0.3.3 retains its original compatibility entry. This public beta has automated coverage; native/mobile and visual acceptance limits are listed in [VALIDATION](docs/VALIDATION.md).
 
-1. Download `brumalt-0.3.4.zip` from the [GitHub Release](https://github.com/zinverno/brumalt/releases/tag/0.3.4).
+1. Download `brumalt-0.3.5.zip` from the [GitHub Release](https://github.com/zinverno/brumalt/releases/tag/0.3.5).
 2. Extract the single `brumalt` folder into `<vault>/.obsidian/plugins/` (or your vault's custom configuration directory).
 3. Check that `main.js`, `manifest.json`, `styles.css` and `LICENSE` are directly inside `brumalt/`.
 4. Enable community plugins, then **Brumalt**, in Obsidian's settings.
@@ -126,7 +126,7 @@ npm run verify-package
 npm run dev
 ```
 
-Build output: `dist/brumalt/` and `dist/brumalt-0.3.4.zip`, plus `dist/SHA256SUMS`. CI checks both Node versions in clean slim containers without zip/unzip. The official Obsidian ESLint recommended rules are required, including API compatibility against the manifest. Packaging uses dev-only fflate with fixed entry order and timestamps; verification runs entirely in Node. A main push publishes a verified prerelease only after those checks; existing published releases are not overwritten. It never submits to the Obsidian directory. See [CONTRIBUTING](CONTRIBUTING.md), [CHANGELOG](CHANGELOG.md) and [release notes](docs/RELEASE-0.3.4.md).
+Build output: `dist/brumalt/` and `dist/brumalt-0.3.5.zip`, plus `dist/SHA256SUMS`. CI checks both Node versions in clean slim containers without zip/unzip. The official Obsidian ESLint recommended rules are required, including API compatibility against the manifest. Packaging uses dev-only fflate with fixed entry order and timestamps; verification runs entirely in Node. A main push publishes a verified prerelease only after those checks; existing published releases are not overwritten. It never submits to the Obsidian directory. See [CONTRIBUTING](CONTRIBUTING.md), [CHANGELOG](CHANGELOG.md) and [release notes](docs/RELEASE-0.3.5.md).
 
 ## Licence
 

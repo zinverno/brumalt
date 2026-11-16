@@ -113,7 +113,7 @@ export default class Brumalt extends Plugin {
       changed: () => { this.updateRibbon(); this.gameModal?.refreshIdle(); },
       failed: () => { new Notice(this.tr('reminderMarkFailed')); },
       show: remaining => {
-        const fragment = doc.createDocumentFragment();
+        const fragment = doc.adoptNode(createFragment());
         const message = fragment.createDiv({ cls: 'cmg-reminder' });
         message.createEl('p', { text: this.tr('reminder', { points: count(this.language, remaining, 'point') }) });
         const action = (label: string, fn: () => void) => { const b = message.createEl('button', { text: label }); b.onclick = fn; };
@@ -169,7 +169,7 @@ export default class Brumalt extends Plugin {
     }
   }
   private showDurationError(): void {
-    const fragment = activeDocument.createDocumentFragment();
+    const fragment = activeDocument.adoptNode(createFragment());
     const area = fragment.createDiv({ cls: 'cmg-reminder' });
     area.createEl('p', { text: this.tr('durationFailed', { n: this.minutes }) });
     for (const [key, restore] of [['retryChoice', false], ['restoreDuration', true]] as const) {

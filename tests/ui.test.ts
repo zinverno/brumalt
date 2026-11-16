@@ -22,6 +22,10 @@ async function fixture(t: TestContext, legacy?: string) {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual: true, url: 'https://test.invalid/' });
   const win = dom.window as Window & typeof globalThis;
   const oldDocument = globalThis.document;
+  const oldFragment = Object.getOwnPropertyDescriptor(globalThis, 'createFragment');
+  Object.defineProperty(globalThis, 'createFragment', { configurable: true, value: (callback?: (fragment: DocumentFragment) => void) => {
+    const fragment = win.document.createDocumentFragment(); callback?.(fragment); return fragment;
+  } });
   Object.defineProperty(globalThis, 'document', { value: win.document, configurable: true });
   Object.defineProperty(globalThis, 'activeDocument', { get: () => win.document, configurable: true });
   const proto = win.HTMLElement.prototype;
@@ -106,6 +110,8 @@ async function fixture(t: TestContext, legacy?: string) {
     plugin.onunload();
     for (const leaf of [...workspace.leaves]) await leaf.detach();
     dom.window.close(); Object.defineProperty(globalThis, 'document', { value: oldDocument, configurable: true });
+    if (oldFragment) Object.defineProperty(globalThis, 'createFragment', oldFragment);
+    else Reflect.deleteProperty(globalThis, 'createFragment');
   });
   return { win, app, workspace, plugin,
     // The plugin's once-at-midnight calendar timer is separate from game resources.
@@ -980,4 +986,47 @@ test('Owner-document helpers: Positions, Rule, radar and failed-save notice stay
   f.app.failSave = true; await f.plugin.setMinutes(5);
   assert.equal(noticeFragments.at(-1)!.ownerDocument, secondary.window.document);
   assert.match(noticeFragments.at(-1)!.textContent!, /5/);
+});
+
+test('0.3.5: helper-created fragments retain notification documents and reminder/retry/restore actions', async context => {
+  context.mock.timers.enable({ apis: ['Date'], now: new Date('2026-11-16T19:00:00') });
+  const f = await fixture(context); await f.plugin.setLanguage('en');
+  const secondary = new JSDOM('<!doctype html><body></body>');
+  context.after(() => secondary.window.close());
+  for (const name of ['createEl', 'createDiv', 'createSpan', 'createSvg']) secondary.window.Node.prototype[name] = (f.win.Node.prototype as any)[name];
+  const checkDocument = (fragment: DocumentFragment, doc: Document) => {
+    assert.equal(fragment.ownerDocument, doc);
+    assert.ok([...fragment.querySelectorAll('*')].every(el => el.ownerDocument === doc));
+  };
+  const clickNotice = (fragment: DocumentFragment, label: string) => {
+    const button = [...fragment.querySelectorAll('button')].find(el => el.textContent === label);
+    assert.ok(button); button.click();
+  };
+  // A global helper from another window must not change the reminder's document.
+  context.mock.method(globalThis, 'createFragment', (callback?: (fragment: DocumentFragment) => void) => {
+    const fragment = secondary.window.document.createDocumentFragment(); callback?.(fragment); return fragment;
+  });
+  context.mock.method(f.win.document, 'hasFocus', () => true);
+  f.plugin.gameModal!.close(); await f.plugin.setReminder(true); await settle();
+  const reminder = noticeFragments.at(-1)!;
+  checkDocument(reminder, f.win.document); assert.match(reminder.textContent!, /6 points left today/);
+  let hidden = 0; context.mock.method((f.plugin as any).reminderNotice, 'hide', () => { hidden++; });
+  clickNotice(reminder, f.plugin.tr('close')); assert.equal(hidden, 1);
+  clickNotice(reminder, f.plugin.tr('openGames')); assert.ok(f.plugin.gameModal);
+  clickNotice(reminder, f.plugin.tr('disableReminders')); await settle();
+  assert.equal(f.app.disk.settings.reminder.enabled, false);
+  // The error notice follows the active popout even when the helper creates in main.
+  context.mock.method(globalThis, 'createFragment', (callback?: (fragment: DocumentFragment) => void) => {
+    const fragment = f.win.document.createDocumentFragment(); callback?.(fragment); return fragment;
+  });
+  Object.defineProperty(globalThis, 'activeDocument', { get: () => secondary.window.document, configurable: true });
+  f.app.failSave = true; await f.plugin.setMinutes(5);
+  const failed = noticeFragments.at(-1)!; checkDocument(failed, secondary.window.document);
+  assert.equal(f.plugin.durationChange?.status, 'error'); assert.match(failed.textContent!, /5/);
+  f.app.failSave = false; clickNotice(failed, f.plugin.tr('retryChoice')); await settle();
+  assert.equal(f.app.disk.settings.minutes, 5); assert.equal(f.plugin.durationChange, null);
+  f.app.failSave = true; await f.plugin.setMinutes(1);
+  const restore = noticeFragments.at(-1)!; checkDocument(restore, secondary.window.document);
+  const writes = f.app.saveAttempts; clickNotice(restore, f.plugin.tr('restoreDuration')); await settle();
+  assert.equal(f.plugin.minutes, 5); assert.equal(f.app.saveAttempts, writes); assert.equal(f.plugin.durationChange, null);
 });
