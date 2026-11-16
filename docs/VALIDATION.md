@@ -66,7 +66,15 @@ The local `.git` path remains read-only, so publication uses the existing source
 
 ### Publication verification
 
-The earlier GitHub App request returned 403 and published nothing. That integration is no longer used. Local checks are complete; hosted CI and publication are pending this source push. Their final results will be verified through the authenticated local CLI and recorded here after execution. No alternate account, force push or Community Directory submission is used.
+The earlier GitHub App request returned 403 and published nothing. Publication was completed using local Git/gh under `zinverno`, without an alternate account, force push or Community Directory submission.
+
+- Source pushed to [main](https://github.com/zinverno/brumalt/tree/main). Remote README, cover, MIT licence, manifest and entrypoint Git blob hashes match the local source. The 66 tracked files were reviewed for secrets, personal paths, vault data and temporary files before push; none were found. Repository description and seven topics are configured; no homepage was invented.
+- [Checks run 43785733119](https://github.com/zinverno/brumalt/actions/runs/43785733119) **passed**: both Node 22 and Node 24 jobs completed clean install, typecheck, all 115 tests, production build, package verification and ZIP integrity. The dependent publication job also passed.
+- [Brumalt 0.3.3 — First Public Beta](https://github.com/zinverno/brumalt/releases/tag/0.3.3) is **published**, not draft, with `prerelease: true`. Tag `0.3.3` points to checked commit `3eed045ddb415836f07f1e291a09dc5e14966025`.
+- All five assets were downloaded again using the local CLI and compared byte for byte with the verified local build. `main.js`, `manifest.json`, `styles.css`, `brumalt-0.3.3.zip` and `SHA256SUMS` match. The downloaded ZIP passes CRC checks and contains exactly the four expected files under `brumalt/`; the manifest identifies Brumalt 0.3.3 / Zinvernix. SHA-256 values above match GitHub asset digests.
+- An anonymous HTTPS download of the public ZIP also succeeded and matched the local archive byte for byte.
+
+This verification record is a documentation-only follow-up to the release commit; it does not replace the tag or published binaries.
 
 Release attachments are the three separate install files, ZIP and SHA256SUMS. Root manifest and the approved cover are included in source. The local source-history bundle is separate from the installation ZIP and is not a release asset.
 
