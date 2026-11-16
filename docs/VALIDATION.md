@@ -1,87 +1,54 @@
-# Validation — Brumalt 0.3.3
+# Validation — Brumalt 0.3.4
 
-Date: 2026-11-16. Automated, native and hosted CI evidence are distinct.
+Date: 2026-11-16. Automated contracts, clean builds and native UI acceptance are separate evidence.
 
-## Local checks
+## Reproduction and scope
 
-Environment: Node 24.14.1, npm 11.11.0, TypeScript 5.9.3, Obsidian declarations 1.13.1. No dependency versions changed.
+The official `eslint-plugin-obsidianmd` 0.6.0 recommended configuration reproduced **10 errors and 3 warnings** on 0.3.3 source: unsafe JSON array member access/returns, unnecessary assertions, globalThis and imperative settings headings/definitions. Packaging with an empty PATH reproduced `spawnSync zip ENOENT`.
 
-- `npm ci`: passed on the publication continuation using the local CLI. The earlier restricted attempt failed at esbuild's child-process version check; that earlier fallback is superseded by this successful full clean install.
-- `npm audit`: two moderate development-dependency reports in the Obsidian declarations → Moment chain ([GHSA-4p3w-j4w9-5jqw](https://github.com/advisories/GHSA-4p3w-j4w9-5jqw)). The lockfile was retained for this release. Brumalt does not import Moment or bundle the Obsidian runtime; this is not a claim about the host app's own dependencies.
-- `npm run typecheck`: passed.
-- `npm test`: **115 passed, 0 failed**. The existing suite is retained; close-control assertions now follow the requested native-close model.
-- `npm run build`: passed. `npm run verify-package`: passed, checking metadata, exactly four ZIP entries, byte equality and SHA-256.
-- CSS syntax check passed. It does not establish visual quality.
-- Reproducible production build/package hashes checked; previous local archives retained.
+Minimum Obsidian is now **1.13.0**, required by `PluginSettingTab.getSettingDefinitions`, `getControlValue`, `setControlValue`, `update` and `refreshDomState`. `getLanguage` dates from 1.8.7. Installed declarations are 1.14.4; the official `no-unsupported-api` rule checks source calls against the manifest minimum, rather than treating the installed declaration version as the minimum. No newer group search option is used. The 0.3.3 → 1.7.2 entry in versions.json remains unchanged.
 
-| Test file | Tests | Coverage |
-| --- | ---: | --- |
-| beta | 15 | Independent oracles over 4,000 seeded Rule and 4,000 Order tasks, adaptive limits, mixed plans, dates/time zones, retention, reminders |
-| branding | 9 | Schema 1–4 import, existing-file precedence, corrupt/empty data, restart/deduplication, read/write/partial failure recovery, destination race, branding and exact cover hash |
-| logic | 15 | Generation, scoring, adaptation, sessions, serial storage and comparisons |
-| navigation | 5 | Five states, profile stability/bounds/comparability and schema-4 round trip |
-| numbers | 2 | Leading zeros, attempt lifecycle, one save, cancellation |
-| polish | 9 | RU/EN dictionaries/plurals/fallback, 2/1/0 points, atomic saves, migrations and mode names |
-| UI | 47 | All six games in RU/EN, singleton, Back/exit/cleanup, delayed writes and retries, durations, settings-only language, daily points, radar, reminders and first-run import |
-| update | 13 | Reachable Words adaptation at every level, old data migration, early/timer comparisons, manual adaptive starting level |
+Primary references: [official ESLint plugin](https://github.com/obsidianmd/eslint-plugin), [declarative settings migration](https://docs.obsidian.md/plugins/guides/migrate-declarative-settings), [submission requirements](https://docs.obsidian.md/Plugins/Releasing/Submit%20your%20plugin).
 
-## Native close correction
+## Implementation checks
 
-The previous hide-native CSS strategy is removed. Brumalt renders **no custom close icon** and does not hide Obsidian's native control. Back remains independent. A small top inset leaves room for host chrome. `Modal.close()` still routes native close, Escape and backdrop to the same unfinished-attempt Cancel / Stay path; unload forcibly disposes resources.
+- Declarative groups expose localized names/descriptions to native search, with no extra Brumalt title or `display()` override. Custom resolvers route every write through the existing serial Store/plugin methods. Pending state uses `refreshDomState`; committed/failed values and language changes use `update`. Dependent reminder controls and time validation are retained. The last-game invariant is checked inside the transaction.
+- `getLanguage()` supplies the automatic language; explicit choice wins and unsupported host languages fall back to English. HTML/SVG are created with parent-owned helpers; duration error notices use `activeDocument`. Secondary-document tests verify ownerDocument for Positions, Rule, radar and notices.
+- External arrays narrow to unknown[] and validated records before nested property reads. Schemas 1–4, existing import precedence and failed-load write protection are unchanged. No game parameters, rules, adaptation thresholds or saved schema changed.
+- CSS replaces the partial text-decoration shorthand with a dotted border of the existing width; uses classic clipped screen-reader text; resolves hidden/save-status specificity without !important; and disables the actual tile transition in reduced-motion mode. No global Modal rules or custom close were added. These are source/DOM regressions, not a native visual or accessibility audit.
+- fflate **0.8.3**, a development-only dependency, replaces system zip/unzip. File order and DOS timestamp (2000-01-01, independent of local timezone) are fixed. The verifier checks exactly four entries, root/dist/archive equality, all five SHA256SUMS entries, and optionally downloaded release files using Node alone. No data.json is packaged.
 
-The realistic test fixture includes native close/backdrop under `containerEl`, outside `modalEl`. Tests also move the native control inside the panel and check all five states. Native close stays visible in the contract DOM, no custom X is rendered, active close pauses and asks before cancellation, Escape stays, backdrop closes or asks as appropriate, and unrelated Modals retain their controls. Completed saves remain recoverable after closure.
+## Executed checks
 
-The user reported that retaining native close and hiding the duplicate works in **Obsidian 1.15.1**. This is user-supplied hotfix evidence, **not our native acceptance of the entire 0.3.3 build**. jsdom does not prove native rendering.
+Local environment: Node 24.14.1, npm 11.11.0, TypeScript 5.9.3, ESLint 9.39.5, typescript-eslint 8.72.2. ESLint uses the complete official recommended config with `--max-warnings 0`, including source, configuration and metadata. Test/build-only files are excluded from plugin-specific lint as recommended upstream.
 
-## Data safety
+- Fresh source-only directory: `npm ci` passed.
+- `npm run typecheck` and `npm run lint` passed; lint reports **0 errors, 0 warnings**.
+- Full suite/build/verification in a restricted PATH without zip/unzip: **120 passed, 0 failed**, typecheck, lint, build and verify-package passed. Fresh-directory production bytes match the workspace build. An earlier local wrapper omitted npm from PATH; it was corrected. A nested npm ci attempt encountered a sandbox esbuild spawn EPERM, so clean npm ci was rerun directly and passed before the restricted-PATH checks. Hosted container npm ci also passed on both Node versions.
+- The local Docker client could not connect to a daemon. Hosted checks instead use fresh `node:22-bookworm-slim` and `node:24-bookworm-slim` containers and assert zip/unzip are absent before npm ci.
 
-`loadWithLegacy` uses public `DataAdapter.exists/read`, plugin `loadData/saveData`, and `vault.configDir`. Import runs before interactive setup, games or reminders. It only creates a new Brumalt data file when that file is absent and the old file validates. It rechecks destination existence after source validation, then checks the saved data round trip. Existing new files always win, including empty/corrupt ones; there is no merge.
+Existing 115 tests are preserved. Five added tests cover nested malformed JSON across all schemas and write refusal; portable deterministic ZIP/checksum rejection; specified CSS regressions; searchable settings, delayed writes, last-game protection, dependencies/errors/recovery; and secondary-document DOM ownership. Existing coverage includes all six games/RU/EN, 4,000 seeded Rule and 4,000 Order tasks, adaptive bounds, 2/1/0 points, history/radar, reminders, save retries, legacy import and a single native close in all five states.
 
-Tests use synthetic old schemas 1/2/3 and current schema 4, including history, settings, levels and daily activity. The old JSON is unchanged; repeated startup performs no second write. Imported IDs populate Store's existing deduplication set, so retrying an imported result does not award points/adaptation again. Custom configuration paths are tested.
+## Publication gate
 
-Invalid schema/JSON, source read failure and failed import prevent further writes. A failure before creation can be retried on reload. A partially written destination is protected and requires manual backup/inspection before recovery. A completed file followed by an error is read on restart without reimport. A destination appearing during source read is retained. Independent external/sync writers are not coordinated; disable the old plugin and back up data before upgrading.
+Changes were submitted in [PR #1](https://github.com/zinverno/brumalt/pull/1). [PR Checks 43792531345](https://github.com/zinverno/brumalt/actions/runs/43792531345) and [branch Checks 43792503401](https://github.com/zinverno/brumalt/actions/runs/43792503401) passed on Node 22 and 24. Both clean-container jobs completed the no-zip/unzip assertion, npm ci, typecheck, zero-warning lint, 120 tests, production build and package verification. The release job was correctly skipped on the feature branch. This evidence-only follow-up is checked again before merging to release-bearing main. The existing release path waits for both checks, publishes a new pre-release and downloads/verifies its assets. Version 0.3.3, its tag and assets are immutable. No Community Directory submission is performed.
 
-Schema 4, game IDs, stored mode IDs and comparison conditions are unchanged. The command's local ID stays `open-games`; its full ID becomes `brumalt:open-games`, so hotkeys need reassignment. No files are automatically deleted from a vault.
+The main run and publication status are available under [Checks](https://github.com/zinverno/brumalt/actions/workflows/ci.yml) and [Release 0.3.4](https://github.com/zinverno/brumalt/releases/tag/0.3.4). Publication requires main CI success and a byte-for-byte comparison of downloaded assets. Passing the official local linter is not a claim that the external Community Directory review service has re-reviewed or accepted the plugin.
 
-## Branding and cover
+## Remaining limits
 
-Manifest/package identify **Brumalt**, ID **brumalt**, version **0.3.3**, author **Zinvernix**, MIT. `versions.json` contains only 0.3.3 under the new ID; earlier changelog entries describe the former local plugin. Historic draft notes are marked accordingly.
+Native Obsidian 1.13/1.15, actual settings-search interaction, pop-out rendering, light/dark/narrow/enlarged-font layouts, mobile, touch and screen readers have not been run for this build. jsdom supplies an explicit host contract, not the native declarative renderer. Earlier isolated native startup failed before plugin registration; that is not acceptance evidence for 0.3.4. No personal vault was used or modified.
 
-`assets/walp.jpg` is an unchanged copy of the approved regular file: JPEG, **1280×640**, **91,045 bytes**, no EXIF entries. Decoder verification passed. SHA-256:
+The official lint dependency chain currently reports **10 moderate npm audit findings**, propagated from minimatch into typescript-eslint/eslint-plugin-n and the official plugin. No high/critical report was returned. Avoided suggested downgrades to obsolete linters and untested major transitive overrides. ESLint 9 also emits an npm deprecation notice; it is retained for the official plugin's declared peer compatibility. These development tools are not bundled in main.js. A separate fflate advisory was resolved by selecting 0.8.3. Zero lint warnings does not mean zero dependency advisories.
 
-`ad668a055d212b32d020ad219206d32b68f4431bc7128d4a29655feee55bc8cd`
+History remains limited to 1,000 attempts/365 days; failed unsaved changes remain memory-only until successfully written. Back up and preserve data.json when updating. Game statistics are not an intelligence assessment.
 
-The cover is at the top of both README versions and is not loaded into the game window. No replacement logo or artwork was generated. No funding link was added.
+## Local artifact SHA-256
 
-## Build and publication
-
-The installation ZIP is `dist/brumalt-0.3.3.zip`, containing exactly `brumalt/main.js`, `brumalt/manifest.json`, `brumalt/styles.css`, `brumalt/LICENSE`. No `data.json`, note, cache, source map or outer version folder is included.
-
-- Bundle: **116,816 bytes**, SHA-256 `1007d89adff2f9bc20bc0bfbbc7f95b3bb61e83ea9fe1456402c360ef0c4d9bf`.
-- CSS: **18,109 bytes**, SHA-256 `a9a1a12d5ecc9ce5a3cbe674b1aae3af1c1e4b51166943338834c6e80951a5d2`.
-- ZIP: **36,381 bytes**, SHA-256 `e940c5f55a3301a9be67a861c13293ec41a98362d21470eb5b4a76801e543960`.
-
-The local `.git` path remains read-only, so publication uses the existing source history in separate temporary Git metadata. Local `gh` authentication confirms account `zinverno` with repo/workflow scopes. HTTPS Git authentication is configured by `gh auth setup-git` in a temporary credential-helper config; no token is copied into the project or logs. The remote was checked empty before publication. Only local Git/gh are used for this continuation, not the previously blocked GitHub App integration.
-[Checks](https://github.com/zinverno/brumalt/actions) runs full npm install, types, tests, production build and archive verification on **Node 22/24** for pushes and pull requests. Only a main push can reach the release job, after both check jobs pass. It builds and verifies assets, uploads a temporary draft, downloads and byte-compares them, publishes a **Pre-release**, then downloads/comparisons again and checks tag/commit identity and release state. Existing published releases are never overwritten. No catalogue submission is automated.
-
-### Publication verification
-
-The earlier GitHub App request returned 403 and published nothing. Publication was completed using local Git/gh under `zinverno`, without an alternate account, force push or Community Directory submission.
-
-- Source pushed to [main](https://github.com/zinverno/brumalt/tree/main). Remote README, cover, MIT licence, manifest and entrypoint Git blob hashes match the local source. The 66 tracked files were reviewed for secrets, personal paths, vault data and temporary files before push; none were found. Repository description and seven topics are configured; no homepage was invented.
-- [Checks run 43785733119](https://github.com/zinverno/brumalt/actions/runs/43785733119) **passed**: both Node 22 and Node 24 jobs completed clean install, typecheck, all 115 tests, production build, package verification and ZIP integrity. The dependent publication job also passed.
-- [Brumalt 0.3.3 — First Public Beta](https://github.com/zinverno/brumalt/releases/tag/0.3.3) is **published**, not draft, with `prerelease: true`. Tag `0.3.3` points to checked commit `3eed045ddb415836f07f1e291a09dc5e14966025`.
-- All five assets were downloaded again using the local CLI and compared byte for byte with the verified local build. `main.js`, `manifest.json`, `styles.css`, `brumalt-0.3.3.zip` and `SHA256SUMS` match. The downloaded ZIP passes CRC checks and contains exactly the four expected files under `brumalt/`; the manifest identifies Brumalt 0.3.3 / Zinvernix. SHA-256 values above match GitHub asset digests.
-- An anonymous HTTPS download of the public ZIP also succeeded and matched the local archive byte for byte.
-
-This verification record is a documentation-only follow-up to the release commit; it does not replace the tag or published binaries.
-
-Release attachments are the three separate install files, ZIP and SHA256SUMS. Root manifest and the approved cover are included in source. The local source-history bundle is separate from the installation ZIP and is not a release asset.
-
-## Native and remaining limits
-
-A fresh isolated vault/profile containing only `Demo.md` and the exact Brumalt build was launched through installed Electron 43. The process terminated before plugin registration with **SIGTRAP** (Python -5 / shell 133): `content/browser/sandbox_host_linux.cc:41`, `shutdown: Operation not permitted (1)`. No personal vault/profile was used.
-
-Native desktop/mobile, actual light/dark/narrow/enlarged-font rendering, real touch, screen readers and pop-outs remain unverified. No generated image substitutes for a product screenshot. The contract tests stub geometry; they cannot measure clipping or contrast.
-
-Manual acceptance should check one native close in all states, active Cancel/Stay through native close/Escape/backdrop, previous-note focus, no note-input interception, both languages, all six games, import from a backed-up old plugin, late save failures/retry, points/reminders and local midnight. Difficulty/profile metrics have no user-study calibration. History retains 1,000 attempts/365 days; unsaved failed changes are memory-only until successfully written. Preserve `data.json` on update.
+```text
+bf2155a8ed2e2a7426706cd2086d00bb693366a0e9840ef2c04d790a187738b7  brumalt/main.js
+d68324089054a40036a218fa8c26f5b00e8eeaa85e050b39d3d34f2975c097c5  brumalt/manifest.json
+21851450daf213e49c8529e10b2890c7fa5da03236775fdaf1894c7097775138  brumalt/styles.css
+8f88c0a38c06a77ac232a0ae1779cb341ee010092933ab3955c90c2a8ac02d0c  brumalt/LICENSE
+958e82a47cb734e25d04127d36657476deb55df44b3bcc51cd653a4171514c4c  brumalt-0.3.4.zip
+```

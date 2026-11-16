@@ -1,5 +1,6 @@
 import type { en } from './en';
 export const ru: Record<keyof typeof en, string> = {
+  generalSettings: 'Общие параметры', dailySettings: 'Дневная цель и напоминания',
   returnHome: 'Главная', leaveTitle: 'Выйти из попытки?', leaveDetail: 'Эта попытка не будет оценена. Сохранённые результаты останутся.', stay: 'Остаться', cancelReturn: 'Отменить попытку и вернуться', cancelClose: 'Отменить попытку и закрыть', cancelFinish: 'Отменить попытку и закончить',
   levelShort: 'Ур. {n}',
   profileTitle: 'Игровой профиль', profileNote: 'Сглаженная точность, не оценка интеллекта.', profileNoData: 'Нет данных', profileScore: '{n} из 100', profileAxis: '{game}: {score} · {samples}', profileAbout: 'Как читать профиль',

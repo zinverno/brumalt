@@ -8,13 +8,14 @@ export function defaults(now = new Date()): SavedData {
   const practice = Object.fromEntries(GAME_IDS.map(id => [id, { manual: false, level: 1 }])) as SavedData['settings']['practice'];
   return { schemaVersion: 4, settings: { minutes: 3, language: 'auto', goal: 6, reminder: { enabled: false, time: '18:00' }, enabled: [...GAME_IDS], practice }, adaptive, history: [], daily: { since: localDay(now), days: [], schedule: [{ from: localDay(now), goal: 6 }], reminderOffered: false } };
 }
-const object = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const object = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !array(v);
+const array = (v: unknown): v is unknown[] => Array.isArray(v);
 const integer = (v: unknown, min: number, max: number): v is number =>
   typeof v === 'number' && Number.isInteger(v) && v >= min && v <= max;
 const duration = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;
 const gameId = (v: unknown): v is GameId => GAME_IDS.includes(v as GameId);
 
-function validateRecord(v: unknown, version: number): boolean {
+function validateRecord(v: unknown, version: number): v is Record<string, unknown> & { id: string } {
   if (!object(v) || !gameId(v.game) || !integer(v.level, 1, MAX_LEVEL[v.game]) ||
       v.rulesVersion !== 1 || typeof v.mode !== 'string' || !['session-adaptive', 'free-adaptive', 'free-manual'].includes(v.mode) ||
       typeof v.id !== 'string' || v.id.length < 1 || v.id.length > 100 ||
@@ -34,6 +35,12 @@ function validateRecord(v: unknown, version: number): boolean {
   const total = v.game === 'location' || isLogic(v.game) ? 1 : expected.count;
   return v.elementCount === expected.count && v.total === total && integer(v.correct, 0, total);
 }
+function validActivity(v: unknown): v is { day: string; goal: Goal; count: number; reminded: boolean } {
+  return object(v) && validDay(v.day) && validGoal(v.goal) && integer(v.count, 0, Number.MAX_SAFE_INTEGER) && typeof v.reminded === 'boolean';
+}
+function validSchedule(v: unknown): v is { from: string; goal: Goal } {
+  return object(v) && validDay(v.from) && validGoal(v.goal);
+}
 export function validRecord(v: unknown): v is AttemptRecord { return validateRecord(v, 4); }
 export function parseData(raw: unknown, now = new Date()): SavedData {
   if (raw === null || raw === undefined) return defaults(now);
@@ -41,31 +48,31 @@ export function parseData(raw: unknown, now = new Date()): SavedData {
     throw new Error('Неизвестная версия или повреждённая структура данных');
   const { settings, adaptive, history } = raw;
   if (![1, 3, 5].includes(Number(settings.minutes)) || typeof settings.minutes !== 'number' ||
-      !Array.isArray(settings.enabled) || !settings.enabled.length || !settings.enabled.every(gameId) ||
+      !array(settings.enabled) || !settings.enabled.length || !settings.enabled.every(gameId) ||
       new Set(settings.enabled).size !== settings.enabled.length || !object(settings.practice))
     throw new Error('Повреждены настройки');
   const originalGames = raw.schemaVersion >= 3 ? GAME_IDS : GAME_IDS.filter(id => !isLogic(id));
   if (!settings.enabled.every(id => originalGames.includes(id))) throw new Error('Неизвестная игра');
   for (const game of originalGames) {
     const a = adaptive[game]; const p = settings.practice[game];
-    if (!object(a) || !integer(a.level, 1, MAX_LEVEL[game]) || !Array.isArray(a.recent) || a.recent.length > 4 ||
+    if (!object(a) || !integer(a.level, 1, MAX_LEVEL[game]) || !array(a.recent) || a.recent.length > 4 ||
         !a.recent.every(v => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1) ||
         !object(p) || typeof p.manual !== 'boolean' || !integer(p.level, 1, MAX_LEVEL[game]))
       throw new Error('Повреждены уровни сложности');
   }
-  if (!Array.isArray(history) || history.length > HISTORY_LIMIT || !history.every(r => validateRecord(r, Number(raw.schemaVersion))) ||
+  if (!array(history) || history.length > HISTORY_LIMIT || !history.every(r => validateRecord(r, Number(raw.schemaVersion))) ||
       new Set(history.map(r => r.id)).size !== history.length) throw new Error('Повреждена история попыток');
   if (raw.schemaVersion >= 3) {
     const daily = raw.daily;
     if (!validGoal(settings.goal) || !object(settings.reminder) || typeof settings.reminder.enabled !== 'boolean' ||
       typeof settings.reminder.time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(settings.reminder.time) ||
       !object(daily) || !validDay(daily.since) || typeof daily.reminderOffered !== 'boolean' ||
-      !Array.isArray(daily.days) || daily.days.length > DAY_LIMIT ||
-      !daily.days.every(d => object(d) && validDay(d.day) && validGoal(d.goal) && integer(d.count, 0, Number.MAX_SAFE_INTEGER) && typeof d.reminded === 'boolean') ||
+      !array(daily.days) || daily.days.length > DAY_LIMIT ||
+      !daily.days.every(validActivity) ||
       new Set(daily.days.map(d => d.day)).size !== daily.days.length ||
-      !Array.isArray(daily.schedule) || !daily.schedule.length || daily.schedule.length > DAY_LIMIT + 1 ||
-      !daily.schedule.every(d => object(d) && validDay(d.from) && validGoal(d.goal)) ||
-      daily.schedule.some((d, i, list) => i > 0 && d.from <= list[i - 1].from)) throw new Error('Повреждены дневные данные');
+      !array(daily.schedule) || !daily.schedule.length || daily.schedule.length > DAY_LIMIT + 1 ||
+      !daily.schedule.every(validSchedule) ||
+      daily.schedule.some((d, i, list) => { const previous = list[i - 1]; return previous !== undefined && d.from <= previous.from; })) throw new Error('Повреждены дневные данные');
   }
   if (raw.schemaVersion === 4) {
     const daily = raw.daily as Record<string, unknown>;

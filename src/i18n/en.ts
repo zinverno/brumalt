@@ -1,4 +1,5 @@
 export const en = {
+  generalSettings: 'General', dailySettings: 'Daily goal and reminders',
   returnHome: 'Home', leaveTitle: 'Leave this attempt?', leaveDetail: 'This attempt will not be scored. Saved results stay.', stay: 'Stay', cancelReturn: 'Cancel attempt & return', cancelClose: 'Cancel attempt & close', cancelFinish: 'Cancel attempt & finish',
   levelShort: 'L{n}',
   profileTitle: 'Exercise profile', profileNote: 'Smoothed accuracy, not an intelligence score.', profileNoData: 'No data yet', profileScore: '{n} out of 100', profileAxis: '{game}: {score} · {samples}', profileAbout: 'About this profile',

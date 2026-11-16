@@ -28,9 +28,10 @@ function template(level: number, random: Random): OrderChallenge {
   const objects = shuffle([0, 1, 2, 3], random).slice(0, params.count);
   const solution = shuffle(objects, random);
   const clues: Clue[] = [];
+  const kinds: Array<'left' | 'right' | 'nextRight'> = level === 1 ? ['left'] : ['left', 'right', 'nextRight'];
   for (const a of objects) for (const b of objects) {
     if (a === b) continue;
-    for (const kind of (level === 1 ? ['left'] : ['left', 'right', 'nextRight']) as ('left' | 'right' | 'nextRight')[]) {
+    for (const kind of kinds) {
       const clue = { kind, a, b }; if (satisfies(solution, clue)) clues.push(clue);
     }
   }

@@ -71,7 +71,7 @@ export function reminderDue(data: SavedData, now: Date): boolean {
 // One local-calendar deadline, also rechecked on focus. No interval polling.
 export function reminderDelay(data: SavedData, now: Date): number {
   const next = new Date(now); const [h, m] = data.settings.reminder.time.split(':').map(Number);
-  next.setHours(h!, m!, 0, 0);
+  next.setHours(h!, m, 0, 0);
   if (next <= now) { next.setDate(next.getDate() + 1); next.setHours(0, 0, 0, 0); }
   return Math.max(1, next.getTime() - now.getTime());
 }

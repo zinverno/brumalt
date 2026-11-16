@@ -1,8 +1,8 @@
 {
   "id": "brumalt",
   "name": "Brumalt",
-  "version": "0.3.3",
-  "minAppVersion": "1.7.2",
+  "version": "0.3.4",
+  "minAppVersion": "1.13.0",
   "description": "Quick offline memory and logic games with adaptive difficulty, daily sessions, and personal progress.",
   "author": "Zinvernix",
   "isDesktopOnly": false

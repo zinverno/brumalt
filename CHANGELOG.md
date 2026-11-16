@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.4 — Obsidian review compliance, 2026-11-16
+
+- Require Obsidian 1.13.0 for searchable declarative settings; preserve the published 0.3.3 compatibility entry and assets.
+- Grouped settings use custom value resolvers and the existing serial Store, with localized errors, dependent controls and safe retries. No extra Brumalt heading or legacy display override.
+- Use getLanguage() and owner-document DOM/SVG helpers, including the Positions icon and notices in secondary windows. Keep the native close and exit confirmation.
+- Narrow external JSON arrays before reading nested fields. Preserve schema 4, legacy imports and rejection of damaged data. Remove unnecessary assertions without changing game generation.
+- Replace system zip/unzip with deterministic dev-only fflate packaging and Node verification, including SHA256SUMS. Test packaging with an empty PATH and different time zones.
+- Remove flagged CSS shorthand, clip-path and !important while retaining hidden content, screen-reader summaries, reduced motion and unsaved-duration styling.
+- Require official Obsidian ESLint recommended checks with zero warnings in clean Node 22/24 container CI before release. Games, adaptation, statistics, language content and stored data remain unchanged.
+
 ## 0.3.3 — Brumalt, first public beta, 2026-11-16
 
 - Final branding: Brumalt, ID `brumalt`, author Zinvernix. Approved `assets/walp.jpg` included unchanged. Earlier entries below describe local versions under the former ID, not published Brumalt releases.

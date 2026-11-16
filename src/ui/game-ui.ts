@@ -9,23 +9,20 @@ import { button, icon, text } from './dom';
 export const tileName = (lang: Language, index: number): string => index === 3 ? t(lang, 'cross') : shapeName(lang, [0, 2, 1][index]!);
 
 export function renderFigure(parent: HTMLElement, f: Figure, lang: Language): void {
-  const ns = 'http://www.w3.org/2000/svg';
-  const svg = parent.ownerDocument.createElementNS(ns, 'svg');
+  const svg = parent.createSvg('svg');
   svg.setAttribute('viewBox', '0 0 80 80'); svg.setAttribute('class', 'cmg-figure');
   svg.setAttribute('role', 'img');
   svg.setAttribute('aria-label', figureLabel(lang, f));
-  const path = parent.ownerDocument.createElementNS(ns, 'path');
+  const path = svg.createSvg('path');
   path.setAttribute('d', 'M40 20 L54 37 H46 V57 H34 V37 H26 Z');
   path.setAttribute('transform', `rotate(${f.direction * 90} 40 40)`);
   path.setAttribute('stroke', 'currentColor'); path.setAttribute('stroke-width', '2');
-  path.setAttribute('fill', f.filled ? 'currentColor' : 'none'); svg.appendChild(path);
+  path.setAttribute('fill', f.filled ? 'currentColor' : 'none');
   [[40, 7], [73, 40], [40, 73], [7, 40]].forEach(([x, y], i) => {
-    const dot = parent.ownerDocument.createElementNS(ns, 'circle');
+    const dot = svg.createSvg('circle');
     dot.setAttribute('cx', String(x)); dot.setAttribute('cy', String(y));
     dot.setAttribute('r', i === f.position ? '5' : '2'); dot.setAttribute('fill', 'currentColor');
-    svg.appendChild(dot);
   });
-  parent.appendChild(svg);
 }
 function shapeButton(parent: HTMLElement, shape: number, action: () => void, lang: Language): HTMLButtonElement {
   const b = button(parent, '', action); b.addClass('cmg-shape');

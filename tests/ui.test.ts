@@ -23,6 +23,7 @@ async function fixture(t: TestContext, legacy?: string) {
   const win = dom.window as Window & typeof globalThis;
   const oldDocument = globalThis.document;
   Object.defineProperty(globalThis, 'document', { value: win.document, configurable: true });
+  Object.defineProperty(globalThis, 'activeDocument', { get: () => win.document, configurable: true });
   const proto = win.HTMLElement.prototype;
   proto.empty = function () { this.replaceChildren(); };
   proto.setText = function (value) { this.replaceChildren(value); };
@@ -38,6 +39,16 @@ async function fixture(t: TestContext, legacy?: string) {
   } as typeof proto.createEl;
   proto.createDiv = function (options: any) { return this.createEl('div', options); };
   proto.createSpan = function (options: any) { return this.createEl('span', options); };
+  win.Node.prototype.createEl = proto.createEl;
+  win.Node.prototype.createDiv = proto.createDiv;
+  win.Node.prototype.createSpan = proto.createSpan;
+  win.Node.prototype.createSvg = function (tag, options = {}) {
+    const el = this.ownerDocument!.createElementNS('http://www.w3.org/2000/svg', tag);
+    if (typeof options !== 'string') {
+      for (const [key, value] of Object.entries(options.attr ?? {})) el.setAttribute(key, String(value));
+    }
+    this.appendChild(el); return el;
+  };
   proto.getBoundingClientRect = () => ({ width: 600, height: 800, top: 0, left: 0, right: 600, bottom: 800, x: 0, y: 0, toJSON() {} });
   let clock = 0; let serial = 0;
   const timers = new Map<number, { at: number; fn: () => void }>();
@@ -527,7 +538,7 @@ test('Polish: settings-only language change waits for save, repeats share a writ
   const f = await fixture(context); const modal = f.plugin.gameModal;
   assert.equal(f.root().lang, 'ru'); assert.equal(f.root().querySelector('[data-language]'), null);
   const selectLanguage = (value: string) => {
-    f.app.settingsTab.display(); const select = f.app.settingsTab.containerEl.querySelector('select')!;
+    f.app.settingsTab.update(); const select = f.app.settingsTab.containerEl.querySelector('select')!;
     select.value = value; select.dispatchEvent(new f.win.Event('change')); return select;
   };
   const gate = deferred(); f.app.saveGate = gate.promise; context.after(() => gate.resolve());
@@ -552,7 +563,7 @@ test('Polish: settings-only language change waits for save, repeats share a writ
   f.choose('Words'); f.click('Start');
   assert.equal(f.root().querySelector('[data-language]'), null);
   await f.plugin.setLanguage('ru'); assert.equal(f.plugin.language, 'en');
-  f.app.settingsTab.display(); assert.equal(f.app.settingsTab.containerEl.querySelector('select')!.disabled, true);
+  f.app.settingsTab.update(); assert.equal(f.app.settingsTab.containerEl.querySelector('select')!.disabled, true);
 });
 
 for (const language of ['ru', 'en'] as const) {
@@ -643,7 +654,7 @@ test('Navigation regression: setup has a header route home without closing the M
 test('Navigation regression: language selection is absent from the Modal', async context => {
   const f = await fixture(context);
   assert.equal(f.root().querySelector('[data-language]'), null);
-  f.app.settingsTab.display(); assert.ok(f.app.settingsTab.containerEl.querySelector('select[aria-label="Язык"]'));
+  f.app.settingsTab.update(); assert.ok(f.app.settingsTab.containerEl.querySelector('select[aria-label="Язык"]'));
 });
 
 test('Navigation: Stay preserves the exact attempt and input, pauses timers, and ignores obsolete confirmation controls', async context => {
@@ -920,4 +931,53 @@ test('Brumalt: first-run legacy import is visible, same data persists on reopen/
   await reloaded.onload(); await reloaded.openGames();
   assert.equal(f.app.writes, 1); assert.deepEqual(reloaded.store.data, saved);
   assert.equal(f.app.legacy, raw); reloaded.onunload();
+});
+
+test('Declarative settings: searchable groups, Store writes, delayed toggles, dependent controls, errors and recovery', async context => {
+  const f = await fixture(context); const tab = f.app.settingsTab;
+  assert.equal(Object.prototype.hasOwnProperty.call(Object.getPrototypeOf(tab), 'display'), false);
+  assert.equal(tab.settingItems.filter((item: any) => item.type === 'group').length, 3);
+  assert.equal(tab.containerEl.querySelector('h2,h3'), null);
+  const defs = tab.settingItems.flatMap((item: any) => item.items ?? [item]);
+  assert.equal(defs.filter((item: any) => item.control).length, 11);
+  assert.ok(defs.filter((item: any) => item.control).every((item: any) => item.name && item.desc && item.searchable !== false));
+  const gate = deferred(); f.app.saveGate = gate.promise; context.after(() => gate.resolve());
+  const writes = [tab.setControlValue('numbers', false), tab.setControlValue('words', false),
+    tab.setControlValue('minutes', '1'), tab.setControlValue('minutes', '5')];
+  await settle(); assert.equal(f.plugin.store.data.settings.enabled.length, 6);
+  assert.equal(tab.getControlValue('minutes'), '5');
+  gate.resolve(); await Promise.all(writes); f.app.saveGate = undefined;
+  assert.equal(f.app.disk.settings.minutes, 5); assert.deepEqual(f.app.disk.settings.enabled, ['location', 'sequence', 'rule', 'order']);
+  await Promise.all(['location', 'sequence', 'rule', 'order'].map(key => tab.setControlValue(key, false)));
+  assert.equal(f.app.disk.settings.enabled.length, 1); assert.ok(notices.includes(f.plugin.tr('keepGame')));
+  await tab.setControlValue('reminder', true);
+  assert.equal(tab.containerEl.querySelector(`input[aria-label="${f.plugin.tr('timeSetting')}"]`)?.parentElement.hidden, false);
+  await tab.setControlValue('time', '19:30'); assert.equal(f.app.disk.settings.reminder.time, '19:30');
+  const attempts = f.app.saveAttempts; await tab.setControlValue('time', '99:99'); assert.equal(f.app.saveAttempts, attempts);
+  f.app.failSave = true; await tab.setControlValue('goal', '12');
+  assert.equal(tab.getControlValue('goal'), '6'); assert.ok(notices.includes(f.plugin.tr('goalFailed')));
+  await tab.setControlValue('numbers', true); assert.equal(tab.getControlValue('numbers'), false); assert.ok(notices.includes(f.plugin.tr('settingsFailed')));
+  f.app.failSave = false; await tab.setControlValue('goal', '12'); await tab.setControlValue('numbers', true);
+  assert.equal(f.app.disk.settings.goal, 12); assert.equal(tab.getControlValue('numbers'), true);
+  await tab.setControlValue('goal', 'off'); assert.equal(f.app.disk.settings.reminder.enabled, false);
+  const reminder = [...tab.containerEl.querySelectorAll('input')].find((el: any) => el.getAttribute('aria-label') === f.plugin.tr('reminderSetting'));
+  assert.equal(reminder.disabled, true);
+  setHostLanguage('de'); await tab.setControlValue('language', 'auto'); assert.equal(f.plugin.language, 'en');
+});
+
+test('Owner-document helpers: Positions, Rule, radar and failed-save notice stay in the active secondary document', async context => {
+  const f = await fixture(context); const secondary = new JSDOM('<!doctype html><body></body>');
+  context.after(() => secondary.window.close());
+  for (const name of ['createEl', 'createDiv', 'createSpan', 'createSvg']) secondary.window.Node.prototype[name] = (f.win.Node.prototype as any)[name];
+  const parent = secondary.window.document.body;
+  const { icon } = await import('../src/ui/dom'); const { renderFigure } = await import('../src/ui/game-ui');
+  const { renderRadar } = await import('../src/ui/radar'); const { exerciseProfile } = await import('../src/core/statistics');
+  icon(parent, 'cmg-positions'); renderFigure(parent, { direction: 1, filled: false, position: 2 }, 'en');
+  renderRadar(parent, exerciseProfile(f.plugin.store.data.history), 'ru');
+  assert.equal(parent.querySelectorAll('svg').length, 3);
+  assert.ok([...parent.querySelectorAll('*')].every((el: any) => el.ownerDocument === secondary.window.document));
+  Object.defineProperty(globalThis, 'activeDocument', { get: () => secondary.window.document, configurable: true });
+  f.app.failSave = true; await f.plugin.setMinutes(5);
+  assert.equal(noticeFragments.at(-1)!.ownerDocument, secondary.window.document);
+  assert.match(noticeFragments.at(-1)!.textContent!, /5/);
 });
