@@ -24,16 +24,16 @@ Local environment: Node 24.14.1, npm 11.11.0, TypeScript 5.9.3, ESLint 9.39.5, t
 
 - Fresh source-only directory: `npm ci` passed.
 - `npm run typecheck` and `npm run lint` passed; lint reports **0 errors, 0 warnings**.
-- Full suite/build/verification in a restricted PATH without zip/unzip: **120 passed, 0 failed**, typecheck, lint, build and verify-package passed. Fresh-directory production bytes match the workspace build. An earlier local wrapper omitted npm from PATH; it was corrected. A nested npm ci attempt encountered a sandbox esbuild spawn EPERM, so clean npm ci was rerun directly and passed before the restricted-PATH checks. Hosted container npm ci remains a separate required gate.
+- Full suite/build/verification in a restricted PATH without zip/unzip: **120 passed, 0 failed**, typecheck, lint, build and verify-package passed. Fresh-directory production bytes match the workspace build. An earlier local wrapper omitted npm from PATH; it was corrected. A nested npm ci attempt encountered a sandbox esbuild spawn EPERM, so clean npm ci was rerun directly and passed before the restricted-PATH checks. Hosted container npm ci also passed on both Node versions.
 - The local Docker client could not connect to a daemon. Hosted checks instead use fresh `node:22-bookworm-slim` and `node:24-bookworm-slim` containers and assert zip/unzip are absent before npm ci.
 
 Existing 115 tests are preserved. Five added tests cover nested malformed JSON across all schemas and write refusal; portable deterministic ZIP/checksum rejection; specified CSS regressions; searchable settings, delayed writes, last-game protection, dependencies/errors/recovery; and secondary-document DOM ownership. Existing coverage includes all six games/RU/EN, 4,000 seeded Rule and 4,000 Order tasks, adaptive bounds, 2/1/0 points, history/radar, reminders, save retries, legacy import and a single native close in all five states.
 
 ## Publication gate
 
-Changes are prepared on a feature branch. PR CI must pass on Node 22 and 24 before merging to release-bearing main. The existing release path waits for both checks, publishes a new pre-release and downloads/verifies its assets. Version 0.3.3, its tag and assets are immutable. No Community Directory submission is performed.
+Changes were submitted in [PR #1](https://github.com/zinverno/brumalt/pull/1). [PR Checks 43792531345](https://github.com/zinverno/brumalt/actions/runs/43792531345) and [branch Checks 43792503401](https://github.com/zinverno/brumalt/actions/runs/43792503401) passed on Node 22 and 24. Both clean-container jobs completed the no-zip/unzip assertion, npm ci, typecheck, zero-warning lint, 120 tests, production build and package verification. The release job was correctly skipped on the feature branch. This evidence-only follow-up is checked again before merging to release-bearing main. The existing release path waits for both checks, publishes a new pre-release and downloads/verifies its assets. Version 0.3.3, its tag and assets are immutable. No Community Directory submission is performed.
 
-Hosted run, PR and release links will be recorded after actual execution; local checks alone do not establish hosted success or acceptance by Obsidian's external review service.
+The main run and publication status are available under [Checks](https://github.com/zinverno/brumalt/actions/workflows/ci.yml) and [Release 0.3.4](https://github.com/zinverno/brumalt/releases/tag/0.3.4). Publication requires main CI success and a byte-for-byte comparison of downloaded assets. Passing the official local linter is not a claim that the external Community Directory review service has re-reviewed or accepted the plugin.
 
 ## Remaining limits
 
