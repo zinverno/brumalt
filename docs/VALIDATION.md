@@ -1,5 +1,15 @@
 # Validation — Brumalt 0.3.5
 
+## Screenshot preparation, 2026-11-16
+
+No screenshots or visual acceptance are claimed. Xvfb failed to bind sockets; installed native Electron 43.6.0 stopped with `sandbox_host_linux.cc:41 ... shutdown: Operation not permitted (1)` in two independent profiles, before vault/plugin load. Both headless and ordinary desktop launch were attempted. Only fresh temporary `Brumalt Showcase` vaults/profiles were used; the personal vault was not opened. See [SHOWCASE](SHOWCASE.md) for Manjaro commands and the outstanding capture/review checklist.
+
+The preparation helper successfully generated 62 synthetic completions through the existing game generators, evaluators, Attempt and Store, then validated the serialized schema. It creates all six chart axes and a partial 4/6-point day; the added regression checks determinism, duplicate-save rejection and the real weekly/profile calculations. The native CDP capture and final image packaging remain unexecuted because there are no real images. No screenshot ZIP or broken image references were added. Version, runtime sources, CSS, data schema, installer assets and approved cover remain unchanged.
+
+Local checks: **122 tests passed** (the previous 121 plus one fixture regression), typecheck, official Obsidian ESLint with zero warnings, production build and Node-only package verification. The fixture preparer ran successfully in a new temporary directory. These automated checks do not establish native screenshot quality; the capture script must still be exercised on a desktop that permits Obsidian startup.
+
+## Published patch checks
+
 Date: 2026-11-16. This patch changes only two runtime expressions in src/main.ts: reminder and duration-error fragments now use Obsidian's global createFragment() helper. Document.adoptNode retains the original notification document even when the helper creates in another window. Timers, controls, UI copy, settings, game rules and saved schema are unchanged. Minimum Obsidian remains 1.13.0; 0.3.3 and 0.3.4 compatibility entries are retained.
 
 - Official eslint-plugin-obsidianmd 0.6.0 recommended configuration plus explicit `obsidianmd/prefer-create-el: error`; no suppressions. The effective config and a deliberately invalid lintText probe confirmed the official rule is active. The installed rule skips some owner-document calls with Obsidian's current types, so the two external scanner warnings were not reproduced locally before the fix; both native calls are nevertheless removed. [Official rule and popout notes](https://github.com/obsidianmd/eslint-plugin/blob/master/docs/rules/prefer-create-el.md).

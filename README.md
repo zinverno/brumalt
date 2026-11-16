@@ -128,6 +128,8 @@ npm run dev
 
 Build output: `dist/brumalt/` and `dist/brumalt-0.3.5.zip`, plus `dist/SHA256SUMS`. CI checks both Node versions in clean slim containers without zip/unzip. The official Obsidian ESLint recommended rules are required, including API compatibility against the manifest. Packaging uses dev-only fflate with fixed entry order and timestamps; verification runs entirely in Node. A main push publishes a verified prerelease only after those checks; existing published releases are not overwritten. It never submits to the Obsidian directory. See [CONTRIBUTING](CONTRIBUTING.md), [CHANGELOG](CHANGELOG.md) and [release notes](docs/RELEASE-0.3.5.md).
 
+Native screenshot preparation and Manjaro capture commands: [isolated showcase workflow](docs/SHOWCASE.md). Capture is currently blocked in the automation environment; no mockups or unverified screenshots are published.
+
 ## Licence
 
 [MIT](LICENSE), copyright © 2026 **Zinvernix**. The approved cover is shipped unchanged in `assets/walp.jpg`.
