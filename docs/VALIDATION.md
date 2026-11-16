@@ -6,7 +6,8 @@ Date: 2026-11-16. Automated, native and hosted CI evidence are distinct.
 
 Environment: Node 24.14.1, npm 11.11.0, TypeScript 5.9.3, Obsidian declarations 1.13.1. No dependency versions changed.
 
-- `npm ci` was executed but the local sandbox rejected esbuild's synchronous postinstall version-check child process (`spawnSync ... EPERM`, despite binary output 0.28.2). It is **not counted as a successful clean install here**. `npm ci --ignore-scripts --offline --no-audit --no-fund` then restored the exact lockfile packages from cache. Full `npm ci` remains required in hosted CI on Node 22 and 24.
+- `npm ci`: passed on the publication continuation using the local CLI. The earlier restricted attempt failed at esbuild's child-process version check; that earlier fallback is superseded by this successful full clean install.
+- `npm audit`: two moderate development-dependency reports in the Obsidian declarations → Moment chain ([GHSA-4p3w-j4w9-5jqw](https://github.com/advisories/GHSA-4p3w-j4w9-5jqw)). The lockfile was retained for this release. Brumalt does not import Moment or bundle the Obsidian runtime; this is not a claim about the host app's own dependencies.
 - `npm run typecheck`: passed.
 - `npm test`: **115 passed, 0 failed**. The existing suite is retained; close-control assertions now follow the requested native-close model.
 - `npm run build`: passed. `npm run verify-package`: passed, checking metadata, exactly four ZIP entries, byte equality and SHA-256.
@@ -60,17 +61,14 @@ The installation ZIP is `dist/brumalt-0.3.3.zip`, containing exactly `brumalt/ma
 - CSS: **18,109 bytes**, SHA-256 `a9a1a12d5ecc9ce5a3cbe674b1aae3af1c1e4b51166943338834c6e80951a5d2`.
 - ZIP: **36,381 bytes**, SHA-256 `e940c5f55a3301a9be67a861c13293ec41a98362d21470eb5b4a76801e543960`.
 
-The local `.git` path is read-only; source staging/history uses separate temporary Git metadata without replacing another history. The target empty public repository and account `zinverno` were verified through the connected GitHub tool. Direct local `gh` network access is unavailable, so source publication uses the connected GitHub API and release publication uses one CI-gated workflow.
-
+The local `.git` path remains read-only, so publication uses the existing source history in separate temporary Git metadata. Local `gh` authentication confirms account `zinverno` with repo/workflow scopes. HTTPS Git authentication is configured by `gh auth setup-git` in a temporary credential-helper config; no token is copied into the project or logs. The remote was checked empty before publication. Only local Git/gh are used for this continuation, not the previously blocked GitHub App integration.
 [Checks](https://github.com/zinverno/brumalt/actions) runs full npm install, types, tests, production build and archive verification on **Node 22/24** for pushes and pull requests. Only a main push can reach the release job, after both check jobs pass. It builds and verifies assets, uploads a temporary draft, downloads and byte-compares them, publishes a **Pre-release**, then downloads/comparisons again and checks tag/commit identity and release state. Existing published releases are never overwritten. No catalogue submission is automated.
 
-### Publication gate: blocked
+### Publication verification
 
-Source publication was attempted through the authenticated `zinverno` connection. The first request suffered a transport failure; a read-back confirmed the repository was still empty. A repeated create-file request then returned **HTTP 403 — Resource not accessible by integration**. The integration reports no installed GitHub App accounts. Local `gh` / Git also cannot connect (DNS resolution failure). No alternate account or force push was used.
+The earlier GitHub App request returned 403 and published nothing. That integration is no longer used. Local checks are complete; hosted CI and publication are pending this source push. Their final results will be verified through the authenticated local CLI and recorded here after execution. No alternate account, force push or Community Directory submission is used.
 
-Consequently **source push, hosted CI, repository About/topics and Release publication are not completed**. The prepared workflow has not run on GitHub and no public release/download is claimed. Access to the repository must be granted to the connected GitHub application before continuation. A complete local source-history bundle is available at `dist/brumalt-0.3.3-source.bundle`; it is not the installation ZIP and is not a release asset.
-
-Hosted run/release status must be read from GitHub; local results alone are not a claim of successful publication. Release attachments are the three separate install files, ZIP and SHA256SUMS. Root manifest and approved cover are included in source.
+Release attachments are the three separate install files, ZIP and SHA256SUMS. Root manifest and the approved cover are included in source. The local source-history bundle is separate from the installation ZIP and is not a release asset.
 
 ## Native and remaining limits
 
