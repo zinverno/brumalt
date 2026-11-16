@@ -1,3 +1,17 @@
+# Validation — Brumalt 0.3.5
+
+Date: 2026-11-16. This patch changes only two runtime expressions in src/main.ts: reminder and duration-error fragments now use Obsidian's global createFragment() helper. Document.adoptNode retains the original notification document even when the helper creates in another window. Timers, controls, UI copy, settings, game rules and saved schema are unchanged. Minimum Obsidian remains 1.13.0; 0.3.3 and 0.3.4 compatibility entries are retained.
+
+- Official eslint-plugin-obsidianmd 0.6.0 recommended configuration plus explicit `obsidianmd/prefer-create-el: error`; no suppressions. The effective config and a deliberately invalid lintText probe confirmed the official rule is active. The installed rule skips some owner-document calls with Obsidian's current types, so the two external scanner warnings were not reproduced locally before the fix; both native calls are nevertheless removed. [Official rule and popout notes](https://github.com/obsidianmd/eslint-plugin/blob/master/docs/rules/prefer-create-el.md).
+- Typecheck passed, including unused-variable checks. ESLint passed with 0 errors and 0 warnings.
+- All **121 tests passed**, retaining the previous 120. The added regression checks both document ownership and reminder close/open/disable plus duration retry/restore actions. The global-helper fixture deliberately creates in a different document, rather than assuming an active-window implementation.
+- Production build and Node-only archive verification passed locally (exact files, versions and SHA-256); CI repeats clean npm ci, typecheck, lint, tests, build and verification in Node 22/24 containers without zip/unzip.
+- No external Obsidian Community re-review tool is exposed in this session and the repository has only the Checks workflow. An external re-review could not be triggered. Official lint success does not claim Community approval. Native popout/mobile rendering remains unverified; these are DOM contract tests.
+
+[CI](https://github.com/zinverno/brumalt/actions/workflows/ci.yml) · [0.3.5 release](https://github.com/zinverno/brumalt/releases/tag/0.3.5). Older releases and their files must remain unchanged. The 0.3.4 report below is historical evidence, including development-tool advisories, not a new native acceptance claim.
+
+---
+
 # Validation — Brumalt 0.3.4
 
 Date: 2026-11-16. Automated contracts, clean builds and native UI acceptance are separate evidence.

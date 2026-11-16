@@ -101,10 +101,10 @@ test('Brumalt release metadata, languages and approved cover are consistent', as
   const lock = JSON.parse(await readFile('package-lock.json', 'utf8'));
   const versions = JSON.parse(await readFile('versions.json', 'utf8'));
   assert.equal(manifest.id, 'brumalt'); assert.equal(manifest.name, 'Brumalt'); assert.equal(manifest.author, 'Zinvernix');
-  assert.equal(manifest.version, '0.3.4'); assert.equal(manifest.minAppVersion, '1.13.0'); assert.equal(manifest.isDesktopOnly, false);
+  assert.equal(manifest.version, '0.3.5'); assert.equal(manifest.minAppVersion, '1.13.0'); assert.equal(manifest.isDesktopOnly, false);
   assert.equal(pkg.name, 'brumalt'); assert.equal(pkg.version, manifest.version); assert.equal(pkg.author, 'Zinvernix');
   assert.equal(pkg.license, 'MIT'); assert.equal(lock.version, manifest.version); assert.equal(lock.packages[''].version, manifest.version);
-  assert.deepEqual(versions, { '0.3.3': '1.7.2', '0.3.4': '1.13.0' });
+  assert.deepEqual(versions, { '0.3.3': '1.7.2', '0.3.4': '1.13.0', '0.3.5': '1.13.0' });
   const cover = await readFile('assets/walp.jpg');
   assert.equal(cover.readUInt16BE(0), 0xffd8); assert.ok(cover.length > 1000);
   const { createHash } = await import('node:crypto'); assert.equal(createHash('sha256').update(cover).digest('hex'), 'ad668a055d212b32d020ad219206d32b68f4431bc7128d4a29655feee55bc8cd');

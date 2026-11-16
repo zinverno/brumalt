@@ -45,10 +45,10 @@ test('Portable ZIP: no zip/unzip on PATH, reproducible across time zones, exact 
   await assert.rejects(exec('zip', [], { env }), { code: 'ENOENT' });
   await assert.rejects(exec('unzip', [], { env }), { code: 'ENOENT' });
   await exec(process.execPath, [packageScript], { cwd: dir, env });
-  const first = await readFile(join(dir, 'dist/brumalt-0.3.4.zip'));
+  const first = await readFile(join(dir, 'dist/brumalt-0.3.5.zip'));
   await exec(process.execPath, [verifyScript], { cwd: dir, env });
   await exec(process.execPath, [packageScript], { cwd: dir, env: { ...env, TZ: 'Pacific/Honolulu' } });
-  assert.deepEqual(await readFile(join(dir, 'dist/brumalt-0.3.4.zip')), first);
+  assert.deepEqual(await readFile(join(dir, 'dist/brumalt-0.3.5.zip')), first);
   await writeFile(join(dir, 'dist/SHA256SUMS'), '0'.repeat(64) + '  brumalt/main.js\n');
   await assert.rejects(exec(process.execPath, [verifyScript], { cwd: dir, env }));
 });

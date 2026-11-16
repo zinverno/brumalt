@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.5 — notification DOM helper, 2026-11-16
+
+- Use Obsidian's createFragment() for reminder and duration-save error notices, adopting the fragment into the original notification document for popout compatibility.
+- Explicitly enforce the official prefer-create-el ESLint rule as an error. Verify notification actions and cross-document ownership. No gameplay, UI, settings, schema or dependency changes; Obsidian 1.13.0 remains the minimum.
+
 ## 0.3.4 — Obsidian review compliance, 2026-11-16
 
 - Require Obsidian 1.13.0 for searchable declarative settings; preserve the published 0.3.3 compatibility entry and assets.

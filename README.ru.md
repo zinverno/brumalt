@@ -4,7 +4,7 @@
 
 Бесплатный офлайн-плагин для Obsidian: короткие игры на память и логику, адаптивная сложность, необязательная дневная цель и личная статистика.
 
-**[English](README.md)** · [Скачать 0.3.4](https://github.com/zinverno/brumalt/releases/tag/0.3.4) · MIT · автор **Zinvernix**
+**[English](README.md)** · [Скачать 0.3.5](https://github.com/zinverno/brumalt/releases/tag/0.3.5) · MIT · автор **Zinvernix**
 
 - Шесть игр в компактном окне поверх текущей заметки.
 - Сессии примерно на 1 / 3 / 5 минут или «Отдельная игра».
@@ -18,7 +18,7 @@
 
 Начните с пустого тестового хранилища. Требуется Obsidian **1.13.0+** для декларативных настроек с поиском. Запись совместимости версии 0.3.3 сохранена. Ограничения проверки нативной и мобильной версии: [VALIDATION](docs/VALIDATION.md).
 
-1. Скачайте `brumalt-0.3.4.zip` из [GitHub Release](https://github.com/zinverno/brumalt/releases/tag/0.3.4).
+1. Скачайте `brumalt-0.3.5.zip` из [GitHub Release](https://github.com/zinverno/brumalt/releases/tag/0.3.5).
 2. Распакуйте единственную папку `brumalt` в `<хранилище>/.obsidian/plugins/` либо в свой каталог конфигурации Obsidian.
 3. Внутри должны лежать `main.js`, `manifest.json`, `styles.css` и `LICENSE`.
 4. Разрешите сторонние плагины и включите **Brumalt**.
@@ -112,6 +112,6 @@ npm run verify-package
 npm run dev
 ```
 
-Готовые файлы: `dist/brumalt/`, архив `dist/brumalt-0.3.4.zip`, контрольные суммы `dist/SHA256SUMS`. CI проверяет обе версии Node в чистых slim-контейнерах без zip/unzip, включая официальный Obsidian ESLint. Архив создаётся fflate с фиксированным порядком и временем файлов, проверяется через Node; публикация предварительного релиза из main происходит только после проверок. Существующие опубликованные релизы не перезаписываются. Заявка в каталог Obsidian автоматически не отправляется.
+Готовые файлы: `dist/brumalt/`, архив `dist/brumalt-0.3.5.zip`, контрольные суммы `dist/SHA256SUMS`. CI проверяет обе версии Node в чистых slim-контейнерах без zip/unzip, включая официальный Obsidian ESLint. Архив создаётся fflate с фиксированным порядком и временем файлов, проверяется через Node; публикация предварительного релиза из main происходит только после проверок. Существующие опубликованные релизы не перезаписываются. Заявка в каталог Obsidian автоматически не отправляется.
 
-[CHANGELOG](CHANGELOG.md) · [Описание релиза](docs/RELEASE-0.3.4.md) · [MIT License](LICENSE), © 2026 **Zinvernix**. Утверждённая обложка сохранена без изменений в `assets/walp.jpg`.
+[CHANGELOG](CHANGELOG.md) · [Описание релиза](docs/RELEASE-0.3.5.md) · [MIT License](LICENSE), © 2026 **Zinvernix**. Утверждённая обложка сохранена без изменений в `assets/walp.jpg`.
