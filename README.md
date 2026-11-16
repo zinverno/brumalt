@@ -14,6 +14,16 @@ Brumalt is a free, offline Obsidian plugin with quick memory and logic games, ad
 
 Brumalt is for intellectual recreation and practice in these particular exercises. It is not a validated IQ test and makes no claim to scientifically proven gains in general intelligence.
 
+## Screenshots
+
+Captured in real Obsidian 1.13.7 with synthetic demonstration results.
+
+![Brumalt Home: six games, Play and daily progress](assets/screenshots/en/01-home.png)
+
+![Brumalt Progress: the complete six-game exercise profile](assets/screenshots/en/03-progress.png)
+
+[Capture report and autonomous workflow](docs/SHOWCASE.md) · [All English images](assets/screenshots/en/README.md)
+
 ## Installation
 
 Start in a disposable test vault. Requires Obsidian **1.13.0+** for searchable declarative settings. Brumalt 0.3.3 retains its original compatibility entry. This public beta has automated coverage; native/mobile and visual acceptance limits are listed in [VALIDATION](docs/VALIDATION.md).
@@ -127,6 +137,8 @@ npm run dev
 ```
 
 Build output: `dist/brumalt/` and `dist/brumalt-0.3.5.zip`, plus `dist/SHA256SUMS`. CI checks both Node versions in clean slim containers without zip/unzip. The official Obsidian ESLint recommended rules are required, including API compatibility against the manifest. Packaging uses dev-only fflate with fixed entry order and timestamps; verification runs entirely in Node. A main push publishes a verified prerelease only after those checks; existing published releases are not overwritten. It never submits to the Obsidian directory. See [CONTRIBUTING](CONTRIBUTING.md), [CHANGELOG](CHANGELOG.md) and [release notes](docs/RELEASE-0.3.5.md).
+
+Autonomous native screenshots: `npm run showcase:capture`. See the [capture report](docs/SHOWCASE.md) for prerequisites, isolation and verified images.
 
 ## Licence
 

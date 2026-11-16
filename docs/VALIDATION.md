@@ -1,5 +1,15 @@
 # Validation — Brumalt 0.3.5
 
+## Native showcase completed, 2026-11-16
+
+All eight screenshots were captured autonomously in real Obsidian **1.13.7 / Electron 43.6.0** and opened individually for visual review. The reused Veynrel harness owns a fresh temporary vault/profile, Xvfb, Openbox, private D-Bus and dynamically assigned CDP port. Main-screen captures use `Page.captureScreenshot`; the complete Russian Settings window uses X11 capture including its native title bar. See [SHOWCASE](SHOWCASE.md) and the [capture manifest](../assets/screenshots/capture-report.json) for methods, dimensions, hashes, appearance preferences and visual findings.
+
+The initial restricted-environment attempts failed before plugin load: Xvfb could not bind sockets and Electron reported `sandbox_host_linux.cc:41 ... shutdown: Operation not permitted (1)`. An explicitly authorized local launch of the same isolated harness resolved this restriction without disabling Electron sandbox. The final run captured 8/8 images, retained the 62 validated synthetic attempts and 4/6 daily progress, and reported exit 0, a clean owned process group and closed CDP port. No personal vault/profile was used. Earlier failed and rejected captures remain local evidence.
+
+Local checks: **125 tests passed**, typecheck, official Obsidian ESLint with zero warnings, production build and Node-only package verification. The article ZIP contains exactly five reviewed Russian PNGs and their captions, with a verified byte-exact round trip. Version, runtime sources, CSS, data schema, installation assets and approved cover remain unchanged. Release regression tests confirm that an existing published stable or beta release is skipped without mutations; drafts remain guarded. This native acceptance covers the documented Linux screens, not mobile, screen readers, other themes or notification-popout behavior.
+
+## Published patch checks
+
 Date: 2026-11-16. This patch changes only two runtime expressions in src/main.ts: reminder and duration-error fragments now use Obsidian's global createFragment() helper. Document.adoptNode retains the original notification document even when the helper creates in another window. Timers, controls, UI copy, settings, game rules and saved schema are unchanged. Minimum Obsidian remains 1.13.0; 0.3.3 and 0.3.4 compatibility entries are retained.
 
 - Official eslint-plugin-obsidianmd 0.6.0 recommended configuration plus explicit `obsidianmd/prefer-create-el: error`; no suppressions. The effective config and a deliberately invalid lintText probe confirmed the official rule is active. The installed rule skips some owner-document calls with Obsidian's current types, so the two external scanner warnings were not reproduced locally before the fix; both native calls are nevertheless removed. [Official rule and popout notes](https://github.com/obsidianmd/eslint-plugin/blob/master/docs/rules/prefer-create-el.md).

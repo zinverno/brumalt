@@ -48,8 +48,8 @@ jobs:
           set -euo pipefail
           version=$(node -p 'require("./manifest.json").version')
           if gh release view "$version" >/dev/null 2>&1; then
-            test "$(gh release view "$version" --json isDraft,isPrerelease --jq '.isDraft == false and .isPrerelease == true')" = true
-            echo "Published beta $version already exists; refusing to replace it."
+            test "$(gh release view "$version" --json isDraft --jq '.isDraft == false')" = true
+            echo "Published release $version already exists; skipping publication (stable or beta)."
             exit 0
           fi
           if gh api "repos/$GH_REPO/git/ref/tags/$version" > "$RUNNER_TEMP/existing-tag.json" 2>/dev/null; then
