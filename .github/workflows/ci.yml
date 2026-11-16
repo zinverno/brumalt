@@ -6,21 +6,20 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    container: node:${{ matrix.node }}-bookworm-slim
     strategy:
       matrix:
         node: [22, 24]
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node }}
-          cache: npm
+      - name: Confirm clean Node environment without system archive tools
+        run: node -e "for (const tool of ['zip', 'unzip']) { const r = require('node:child_process').spawnSync(tool, ['--help']); require('node:assert/strict').equal(r.error?.code, 'ENOENT'); }"
       - run: npm ci
       - run: npm run typecheck
+      - run: npm run lint
       - run: npm test
       - run: npm run build
       - run: npm run verify-package
-      - run: unzip -t dist/brumalt-0.3.3.zip
   release:
     needs: check
     if: github.repository == 'zinverno/brumalt' && github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -43,7 +42,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run verify-package
-      - name: Publish verified first public beta
+      - name: Publish verified beta
         shell: bash
         run: |
           set -euo pipefail
@@ -58,7 +57,7 @@ jobs:
             exit 1
           fi
           gh release create "$version" --target "$GITHUB_SHA" --draft --prerelease \
-            --title "Brumalt $version — First Public Beta" --notes-file "docs/RELEASE-$version.md" \
+            --title "Brumalt $version — Obsidian Review Compliance" --notes-file "docs/RELEASE-$version.md" \
             dist/brumalt/main.js dist/brumalt/manifest.json dist/brumalt/styles.css \
             "dist/brumalt-$version.zip" dist/SHA256SUMS
           gh release download "$version" --dir "$RUNNER_TEMP/draft-assets"
@@ -70,6 +69,6 @@ jobs:
           gh release download "$version" --dir "$RUNNER_TEMP/published-assets"
           for file in main.js manifest.json styles.css; do cmp "dist/brumalt/$file" "$RUNNER_TEMP/published-assets/$file"; done
           cmp "dist/brumalt-$version.zip" "$RUNNER_TEMP/published-assets/brumalt-$version.zip"
-          unzip -t "$RUNNER_TEMP/published-assets/brumalt-$version.zip"
+          node scripts/verify-package.mjs "$RUNNER_TEMP/published-assets"
           test "$(gh release view "$version" --json isDraft,isPrerelease --jq '.isDraft == false and .isPrerelease == true')" = true
           gh release view "$version" --json url,tagName,isDraft,isPrerelease

@@ -2,7 +2,6 @@ import { count, gameText, t, type Language } from '../i18n';
 import type { exerciseProfile } from '../core/statistics';
 
 type Profile = ReturnType<typeof exerciseProfile>;
-const NS = 'http://www.w3.org/2000/svg';
 const point = (axis: number, scale: number): [number, number] => {
   const angle = -Math.PI / 2 + axis * Math.PI / 3;
   return [100 + 80 * scale * Math.cos(angle), 100 + 80 * scale * Math.sin(angle)];
@@ -15,14 +14,13 @@ export function renderRadar(parent: HTMLElement, profile: Profile, language: Lan
   heading.createEl('h2', { text: t(language, 'profileTitle'), attr: { id } });
   heading.createSpan({ text: '0–100', cls: 'cmg-caption', attr: { 'aria-hidden': 'true' } });
   const plot = figure.createDiv({ cls: 'cmg-radar' });
-  const svg = parent.ownerDocument.createElementNS(NS, 'svg');
+  const svg = plot.createSvg('svg');
   svg.setAttribute('viewBox', '0 0 200 200'); svg.setAttribute('role', 'img');
   svg.setAttribute('aria-labelledby', id); svg.setAttribute('aria-describedby', id + '-summary');
-  plot.appendChild(svg);
-  const draw = (tag: string, attrs: Record<string, string | number>) => {
-    const el = parent.ownerDocument.createElementNS(NS, tag);
+  const draw = (tag: keyof SVGElementTagNameMap, attrs: Record<string, string | number>) => {
+    const el = svg.createSvg(tag);
     for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, String(value));
-    svg.appendChild(el); return el;
+    return el;
   };
   const polygon = (values: number[]) => values.map((value, i) => point(i, value).join(',')).join(' ');
   for (const size of [.5, 1]) draw('polygon', { points: polygon(profile.map(() => size)), class: 'cmg-radar-ring' });
@@ -40,7 +38,7 @@ export function renderRadar(parent: HTMLElement, profile: Profile, language: Lan
     const dot = draw('circle', { cx: x, cy: y, r: 3, class: missing ? 'cmg-radar-missing' : 'cmg-radar-point' });
     if (!missing) dot.setAttribute('data-score', String(entry.score));
     const label = `${gameText(language, entry.game, 'name')}: ${missing ? t(language, 'profileNoData') : t(language, 'profileScore', { n: entry.score! })}`;
-    const title = parent.ownerDocument.createElementNS(NS, 'title'); title.textContent = label; dot.appendChild(title);
+    dot.createSvg('title').textContent = label;
     plot.querySelector<HTMLElement>(`.cmg-radar-label-${i}`)!.title = label;
   }
   figure.createEl('figcaption', { text: t(language, 'profileNote') + (profile.some(entry => entry.score === null) ? ' ' + t(language, 'profileMissing') : ''), cls: 'cmg-caption' });

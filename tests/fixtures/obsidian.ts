@@ -1,3 +1,4 @@
+import type { SettingDefinitionItem, SettingDefinitionControl } from 'obsidian';
 export let hostLanguage = 'ru';
 export const getLanguage = (): string => hostLanguage;
 export const setHostLanguage = (value: string): void => { hostLanguage = value; };
@@ -77,12 +78,58 @@ export class Plugin {
   registerView(type: string, factory: unknown): void { this.app.workspace.factories.set(type, factory); }
   addRibbonIcon(_icon: string, _title: string, action: () => void): HTMLElement { this.app.ribbon = action; return document.body.appendChild(document.createElement('button')); }
   addCommand(command: { id: string; name: string; callback: () => unknown }) { this.app.commands.set(command.id, command.callback); this.app.command = command; return command; }
-  addSettingTab(tab: unknown): void { this.app.settingsTab = tab; }
+  addSettingTab(tab: PluginSettingTab): void { this.app.settingsTab = tab; tab.update(); }
 }
 export class PluginSettingTab {
   containerEl = document.createElement('div');
+  settingItems: SettingDefinitionItem[] = [];
+  private bindings: { def: SettingDefinitionControl; row: HTMLElement; input: HTMLInputElement | HTMLSelectElement }[] = [];
   constructor(_app: unknown, _plugin: unknown) {}
+  getSettingDefinitions(): SettingDefinitionItem[] { return []; }
+  getControlValue(_key: string): unknown { return undefined; }
+  async setControlValue(_key: string, _value: unknown): Promise<void> {}
+  update(): void {
+    this.settingItems = this.getSettingDefinitions(); this.containerEl.replaceChildren(); this.bindings = [];
+    const render = (items: SettingDefinitionItem[]) => {
+      for (const def of items) {
+        if ('type' in def) {
+          if (def.type === 'group' || def.type === 'list') {
+            if (def.heading) this.containerEl.createDiv({ text: def.heading, cls: 'setting-item-heading' });
+            render(def.items ?? []);
+          }
+          continue;
+        }
+        const row = this.containerEl.createDiv(); row.createSpan({ text: def.name });
+        if (typeof def.desc === 'string') row.createEl('small', { text: def.desc });
+        if (def.control) {
+          const control = def.control;
+          const input = row.createEl(control.type === 'dropdown' ? 'select' : 'input');
+          input.setAttribute('aria-label', def.name);
+          if (control.type === 'dropdown') for (const [value, label] of Object.entries(control.options)) {
+            const option = input.createEl('option', { text: label }); option.value = value;
+          }
+          if (control.type === 'toggle') { (input as HTMLInputElement).type = 'checkbox'; (input as HTMLInputElement).checked = !!this.getControlValue(control.key); }
+          else input.value = String(this.getControlValue(control.key) ?? '');
+          input.addEventListener('change', () => {
+            const value = control.type === 'toggle' ? (input as HTMLInputElement).checked : input.value;
+            void this.setControlValue(control.key, value);
+          });
+          this.bindings.push({ def: def as SettingDefinitionControl, row, input });
+        } else if (def.render) def.render(new Setting(row) as never, {} as never);
+        row.hidden = typeof def.visible === 'function' ? !def.visible() : def.visible === false;
+      }
+    };
+    render(this.settingItems); this.refreshDomState();
+  }
+  refreshDomState(): void {
+    for (const { def, row, input } of this.bindings) {
+      const disabled = def.control.disabled;
+      input.disabled = typeof disabled === 'function' ? disabled() : !!disabled;
+      row.hidden = typeof def.visible === 'function' ? !def.visible() : def.visible === false;
+    }
+  }
 }
+
 class Control {
   constructor(public inputEl: HTMLInputElement | HTMLSelectElement) {}
   addOptions(options: Record<string, string>): this {

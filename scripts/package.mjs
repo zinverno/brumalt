@@ -1,5 +1,6 @@
 import { mkdir, copyFile, readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import { zipSync } from 'fflate';
 const manifest = JSON.parse(await readFile('manifest.json', 'utf8'));
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 const versions = JSON.parse(await readFile('versions.json', 'utf8'));
@@ -14,14 +15,14 @@ await mkdir(dir, { recursive: true });
 for (const file of ['main.js', 'manifest.json', 'styles.css', 'LICENSE']) await copyFile(file, `${dir}/${file}`);
 console.log(`Install files: ${dir}`);
 // A reproducible archive: fixed timestamps, no extra outer directory or OS metadata.
-const { utimes, readdir, writeFile } = await import('node:fs/promises');
-const { execFileSync } = await import('node:child_process');
+const { readdir, writeFile } = await import('node:fs/promises');
 const { createHash } = await import('node:crypto');
 const files = ['main.js', 'manifest.json', 'styles.css', 'LICENSE'];
 assert.deepEqual((await readdir(dir)).sort(), [...files].sort());
-for (const file of files) await utimes(`${dir}/${file}`, new Date('2000-01-01T00:00:00Z'), new Date('2000-01-01T00:00:00Z'));
+const entries = {};
+for (const file of files) entries[`${manifest.id}/${file}`] = new Uint8Array(await readFile(`${dir}/${file}`));
 const archive = `${manifest.id}-${manifest.version}.zip`;
-execFileSync('zip', ['-q', '-X', '-FS', archive, ...files.map(file => `${manifest.id}/${file}`)], { cwd: 'dist', stdio: 'inherit', env: { ...process.env, TZ: 'UTC' } });
+await writeFile(`dist/${archive}`, zipSync(entries, { level: 9, mtime: new Date(2000, 0, 1), os: 0 }));
 const checksums = [];
 for (const file of [...files.map(file => `${manifest.id}/${file}`), archive]) {
   const content = await readFile(`dist/${file}`);

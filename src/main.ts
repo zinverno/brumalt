@@ -17,7 +17,7 @@ interface PendingResult {
 
 export default class Brumalt extends Plugin {
   store!: Store;
-  get language() { return resolveLanguage(this.store?.data.settings.language ?? 'auto', (typeof getLanguage === 'function' ? getLanguage() : undefined) || globalThis.document?.documentElement.lang, globalThis.navigator?.language); }
+  get language() { return resolveLanguage(this.store?.data.settings.language ?? 'auto', getLanguage()); }
   tr(key: Key, values?: Record<string, string | number>): string { return t(this.language, key, values); }
   async setLanguage(language: LanguageSetting): Promise<void> {
     if (this.store.loadError || this.store.configurationBusy || this.gameModal?.activeAttempt) return;
@@ -114,7 +114,7 @@ export default class Brumalt extends Plugin {
       failed: () => { new Notice(this.tr('reminderMarkFailed')); },
       show: remaining => {
         const fragment = doc.createDocumentFragment();
-        const message = doc.createElement('div'); message.className = 'cmg-reminder'; fragment.appendChild(message);
+        const message = fragment.createDiv({ cls: 'cmg-reminder' });
         message.createEl('p', { text: this.tr('reminder', { points: count(this.language, remaining, 'point') }) });
         const action = (label: string, fn: () => void) => { const b = message.createEl('button', { text: label }); b.onclick = fn; };
         action(this.tr('openGames'), () => { this.reminderNotice?.hide(); void this.openGames(); });
@@ -169,8 +169,8 @@ export default class Brumalt extends Plugin {
     }
   }
   private showDurationError(): void {
-    const fragment = this.ribbon.ownerDocument.createDocumentFragment();
-    const area = this.ribbon.ownerDocument.createElement('div'); area.className = 'cmg-reminder'; fragment.appendChild(area);
+    const fragment = activeDocument.createDocumentFragment();
+    const area = fragment.createDiv({ cls: 'cmg-reminder' });
     area.createEl('p', { text: this.tr('durationFailed', { n: this.minutes }) });
     for (const [key, restore] of [['retryChoice', false], ['restoreDuration', true]] as const) {
       area.createEl('button', { text: this.tr(key) }).onclick = () => {
