@@ -10,6 +10,7 @@
     "test": "node scripts/test.mjs",
     "build": "npm run typecheck && node esbuild.config.mjs production && node scripts/package.mjs",
     "verify-package": "node scripts/verify-package.mjs",
+    "showcase:capture": "npm run build && python3 scripts/native/run.py",
     "lint": "eslint . --max-warnings 0"
   },
   "license": "MIT",

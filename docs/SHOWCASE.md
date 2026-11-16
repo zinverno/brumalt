@@ -1,97 +1,76 @@
-# Native screenshot showcase
+# Brumalt native showcase
 
-## Current status
+**Captured and individually visually reviewed: 2026-11-16. All eight real PNGs are available.** Brumalt **0.3.5**, Obsidian **1.13.7**, Electron **43.6.0**, Chromium **150.0.7871.250**, Linux/X11. No user interaction with Obsidian was needed.
 
-**Capture pending. No screenshots, visual acceptance or Habr image ZIP are claimed.** On 2026-11-16 this environment blocked Xvfb's listening sockets; two fresh-profile launches of the installed native Obsidian (headless and desktop) both stopped before vault/plugin load with:
+The machine-readable [capture report](../assets/screenshots/capture-report.json) records dimensions, bytes, SHA-256, capture methods, game phases, language, six radar scores, build/harness hashes and process cleanup. The eight published files are byte-for-byte copies of the reviewed native originals.
 
-```text
-FATAL:content/browser/sandbox_host_linux.cc:41
-Check failed: . shutdown: Operation not permitted (1)
-```
+## Images
 
-This is a host startup failure, not evidence of a Brumalt UI failure. No substitute HTML, generated image or retouched UI was used. Screenshot links must not be inserted in either main README until the files exist and have been reviewed. The showcase PR must remain a draft until those gates pass.
+| File under `assets/screenshots/` | Pixels | Bytes | Visual review |
+| --- | --- | ---: | --- |
+| `en/01-home.png` | 1200 × 800 | 36,913 | Passed |
+| `en/02-logic.png` | 1200 × 800 | 27,385 | Passed |
+| `en/03-progress.png` | 1200 × 800 | 42,487 | Passed |
+| `ru/01-home.png` | 1600 × 900 | 45,661 | Passed |
+| `ru/02-memory.png` | 1600 × 900 | 33,106 | Passed |
+| `ru/03-logic.png` | 1600 × 900 | 32,493 | Passed |
+| `ru/04-progress.png` | 1600 × 900 | 52,619 | Passed |
+| `ru/05-settings.png` | 1600 × 1100 | 109,369 | Passed |
+All files are below 5 MB. English Home and Progress are embedded in [README](../README.md); Russian Home and Progress in [README.ru](../README.ru.md). The [English collection](../assets/screenshots/en/README.md) and [Russian article captions](../assets/screenshots/ru/README.md) describe their purpose.
 
-## Prepare on Manjaro
-
-Use Node.js 22 or 24, the existing checkout and a locally installed Obsidian 1.13+. Run from the repository root:
-
-```sh
-npm ci
-npm run build
-node scripts/showcase.mjs prepare
-```
-
-The last line prints a **new** temporary directory, for example `/tmp/brumalt-showcase-ABC123`. Set it explicitly to the printed path:
+## One autonomous command
 
 ```sh
-showcase=/tmp/brumalt-showcase-ABC123
-env XDG_CONFIG_HOME="$showcase/config" obsidian \
-  --user-data-dir="$showcase/profile" \
-  --remote-debugging-address=127.0.0.1 --remote-debugging-port=9259
+npm run showcase:capture
 ```
 
-This launches the actual installed application; it does not load an HTML harness. Keep this process open while capturing. Port 9259 must be free; keep the debugging endpoint local and close the isolated application when finished. Do not use a public interface or port forwarding. No account, token or system package installation is needed. The ordinary sandbox is retained; no `--no-sandbox` workaround is prescribed.
+The command builds and verifies the installation package, generates a fresh synthetic vault and profile, starts its own graphical session and real Obsidian, waits for plugin/command/layout readiness, selects English and Russian through real settings, opens the required screens, captures all eight PNGs, validates them and terminates only its own process group. It prints the fresh `/tmp/brumalt-showcase-<id>` output directory. Original captures are in `captures/en` and `captures/ru`; `report.json`, `native-sessions.jsonl`, `electron.log` and `isolation/` retain local evidence, including failures. A rerun uses a new directory and preserves earlier originals.
 
-The new profile knows only **Brumalt Showcase**. Do not select, import, copy or open a personal vault. The script never reads the default Obsidian profile. It creates no symlinks and never accepts a destination vault to overwrite. `prepare` refuses additional arguments and creates a fresh directory every time.
+Prerequisites for this Linux capture path: Node 22/24, installed npm dependencies, Python 3, Xvfb, Openbox, D-Bus, `xauth`, `xprop`, ImageMagick's `import`, Noto Sans Condensed and an installed Obsidian/Electron pair. The verified host uses `/usr/bin/electron43` and `/usr/lib/obsidian/app.asar`; `OBSIDIAN_ELECTRON` and `OBSIDIAN_APP` can specify another installed pair. This does not install system software or download a browser. Other host versions require a fresh native/visual check.
 
-The installation is byte-checked against the current 0.3.5 production package before copying. The vault contains only the Brumalt plugin, standard file explorer/command palette, a neutral **Welcome to Brumalt** note and generated settings/data. The dark theme and purple accent are normal Obsidian appearance settings, not injected CSS.
+Codex's restricted execution initially prevented Xvfb from binding its socket (`Failed to find a socket to listen on`). A specifically authorized local execution of the same command resolved the restriction. **Electron sandbox remained enabled**; no `--no-sandbox` was used. A restricted-environment failure is not a reason to require manual window launch or game navigation.
 
-If the first launch requests trust or community-plugin activation, approve it only for this demonstration vault and enable Brumalt. Open the neutral note, collapse sidebars, close extra tabs, dismiss introductory notices, and wait for Brumalt's command to register. Do not install themes, snippets or other plugins. Keep default text scale; if the complete Settings page cannot fit, use a larger real desktop rather than cropping controls.
+## Reused Veynrel architecture
 
-## What the synthetic data means
+The launcher and session boundary are adapted from [Veynrel's native-isolation revision `eb4caba`](https://github.com/zinverno/veynrel/tree/eb4caba/scripts/native), under the same MIT license and copyright:
 
-`scripts/showcase-data.ts` generates 62 fictional completions using the real six game generators, valid answers, `Attempt.finish`, `Store.record` and the current `parseData` validator. It uses a fixed random seed and the current **local** date. Scores, response times and practice levels are editorial demonstration inputs, not observed human performance. Each game has ten past attempts; two additional attempts give today **4/6 points**. Incorrect completed answers are included. A repeated save is checked to add nothing.
+- `scripts/native/run.py`: Xvfb `-displayfd`, private Xauthority cookie, Openbox readiness, isolated D-Bus with no desktop activation directories, isolated XDG directories, process group, timeout and cleanup evidence.
+- `scripts/native/session.mjs`: fresh profile, native Electron frame, sandboxed launch, loopback CDP port `0`, discovery through that profile's `DevToolsActivePort`.
+- `scripts/final-product-ui-native.mjs`: renderer assertions, `Emulation.setDeviceMetricsOverride` and `Page.captureScreenshot`.
+- `scripts/recall-topics-native.mjs` and `scripts/native/smoke.mjs`: plugin/command/layout readiness, real settings navigation, owned-window identification and unchanged-data checks.
 
-The chart uses Brumalt's unchanged comparable-result calculation. No 100%-everywhere profile, arbitrary radar coordinates, future activity, fake device date or overwritten DOM values are used. Weekly appearance depends on the actual weekday: on Monday, the remaining days correctly have no activity yet. Reminders start disabled so they cannot interrupt capture. All generated `data.json` files stay in the temporary vault; none belongs in Git or a release/archive.
+Brumalt's scenario stays in `scripts/showcase.mjs`; it does not add a new game renderer or browser mock. There is no fixed CDP port and no `Browser.getWindowForTarget`. Before UI mutation, it verifies that the renderer has the exact launcher-created vault. It never opens a personal vault or uses the normal Obsidian profile. Only its own session is terminated; no global `pkill` is used.
 
-## Capture the real application
+## Actual capture methods and appearance
 
-The small CDP capture helper uses Node's built-in WebSocket and the running Electron renderer. It checks the exact vault path **before** focusing, resizing, clicking or capturing. It also checks version, language, requested screen, dark theme, no notices and exactly one visible native close. It does not replace styles, freeze timers, change scores, mask UI or fabricate images.
+Seven images use native Electron `Page.captureScreenshot`, with the requested viewport set through `Emulation.setDeviceMetricsOverride` and device scale factor 1. The standard dark theme and Obsidian's interface-font preference **Noto Sans Condensed** are used. English uses native **90% UI zoom**, which fits the complete Progress screen at 1200 × 800; Russian uses **100%**. The compact interface font avoids an isolated final letter wrapping in the long Russian game name. These are host preferences, not injected CSS or changes to Brumalt.
 
-The native window is resized to the requested content area, with no image scaling. Use a desktop large enough for 1600 × 1100 plus window decorations; the helper fails on a dimension mismatch instead of stretching pixels. Native CDP capture is **not yet end-to-end tested here**, because the application cannot start. Host API or window-manager differences may require a manual desktop capture with the same safety and size checks.
+Obsidian 1.13.7 opens Settings in a separate native window. Its embedded-dialog alternative clipped the final description. The final Settings capture therefore uses the real separate window, resized using Electron's native window API and measured `_NET_FRAME_EXTENTS`. `import -window <owned-XID> -frame` captures that window including its actual OS title bar and single close button at exactly 1600 × 1100. It uses the same private X server and owned Electron session. CDP alone excludes the OS frame; no title bar is composited onto the image.
 
-The helper deliberately accepts one Obsidian renderer only. If your host opens Settings in a separate window/document, it will refuse the ambiguous target list: capture that isolated Settings window with your desktop's window-screenshot tool instead. Do not close an unrelated personal window or disable a safety check to make capture proceed. Check the selected window and resulting dimensions before saving. No multi-window capture support is claimed.
+There is no image resizing, retouching, mock HTML, replacement chart, hidden UI or modified game timer. Logic questions are newly generated by the actual plugin. The memory screenshot is captured during the normal eight-second presentation. Exiting uses Back and the actual cancellation confirmation; no answers are submitted to manufacture navigation.
 
-Choose English in **Settings → Brumalt → Language**, return to the note, then open **Open Brumalt** from the command palette. For each shot, leave the requested screen visible and run the matching command from a second terminal:
+## Demonstration data and visual review
 
-```sh
-node scripts/showcase.mjs capture "$showcase" en/01-home
-node scripts/showcase.mjs capture "$showcase" en/02-logic
-node scripts/showcase.mjs capture "$showcase" en/03-progress
-```
+The unchanged `scripts/showcase-data.ts` creates **62 synthetic completions** through the six game generators, `Attempt.finish`, `Store.record` and `parseData`. Ten historical attempts per game and two additional attempts yield **4/6 points today**. Scores, timing and practice levels are fictional demonstration inputs, not measured human performance. The existing plugin calculates the six-axis chart: **90, 60, 80, 70, 80, 50** in game order. No result is added during capture; persisted history is compared with the original fixture.
 
-Before `en/02-logic`, select **Rule** and leave it on **setup**, at level 3. The helper brings Obsidian forward and clicks the real **Start** button, then captures the active question with examples and four answers. It never changes the generated task. To leave a task, use Back and confirm cancellation; do not submit an answer just to navigate away.
+The current local date is retained. This capture happened on Monday, so later weekdays correctly have no activity. Reminders are disabled. Only a neutral `Brumalt.md` note is present. Temporary data, profiles, caches and diagnostic logs are excluded from Git and the article ZIP.
 
-Before `en/03-progress`, return Home and open Progress. Scroll to the top. Home and Progress remain idle while the terminal is used.
+Every selected PNG was opened and inspected individually. The review checked readable text, correct language (including Russian host Settings), centered foreground game windows, full game controls, all six radar axes and result rows, no clipped settings or footer, sensible spacing, no notifications and no personal information. Each foreground window has one close button; the background Obsidian tab's normal close icon is not a second Brumalt close control. Earlier captures with an awkward word wrap or clipped settings were rejected and retained locally.
 
-Switch to **Русский** through Brumalt settings, then repeat:
+The final native run reported **8/8 captures, zero main-renderer exceptions, exit 0, clean process group and closed CDP port**, in 7.784 seconds after build. Automatic checks cover dimensions, PNG signature, file sizes, state/language, six cards, 4/6 progress, six nonempty radar axes, notices, modal geometry and unchanged installation/history. Visual acceptance is recorded separately; a future raw capture starts with `visualReview: required` and does not silently overwrite these reviewed public assets.
 
-```sh
-node scripts/showcase.mjs capture "$showcase" ru/01-home
-node scripts/showcase.mjs capture "$showcase" ru/02-memory
-node scripts/showcase.mjs capture "$showcase" ru/03-logic
-node scripts/showcase.mjs capture "$showcase" ru/04-progress
-node scripts/showcase.mjs capture "$showcase" ru/05-settings
-```
-
-Before `ru/02-memory`, leave **Расположение**, level 3, on setup. The helper clicks **Начать** and captures within the normal eight-second presentation; no timer is altered. For `ru/03-logic`, use **Правило** setup. For settings, close the game Modal and open the Brumalt settings tab, at the top. Leave the reminder off; its toggle is still visible. Verify language, goal, reminder toggle and all enabled games are in frame.
-
-Captures go to `$showcase/captures/en/` and `ru/`, with local JSON evidence containing dimensions, size, SHA-256, host user agent and `visualReview: required`. PNGs omit the mouse cursor. Each EN image must be exactly **1200 × 800**; RU uses **1600 × 900**, or **1600 × 1100** for settings. All must be under 5 MB. Existing files are not overwritten: move rejected originals to a separate attempts folder before retaking.
-
-## Review and publish only real images
-
-Open **every PNG**, not just its metadata. Check correct language, actual native Obsidian, complete and legible content, centered Modal, one close, no notices, no personal information, no other windows, sensible margins, readable six-axis radar and no clipped settings. No pixel privacy claim follows from DOM assertions alone. If a screen is broken, report the bug separately; do not redraw it. Keep original captures and sidecars locally.
-
-After all eight pass, copy just the selected PNGs into `assets/screenshots/en/` and `assets/screenshots/ru/`. Update both directory READMEs and record actual dimensions, sizes, Obsidian version and visual findings here. Add a compact `## Screenshots` after the feature introduction in the English README, using only `en/01-home.png` and `en/03-progress.png`; use `ru/01-home.png` and `ru/04-progress.png` in the Russian README. Keep `assets/walp.jpg` unchanged.
-
-Then build the article archive:
+## Habr package
 
 ```sh
 node scripts/showcase.mjs pack
 ```
 
-It requires all five real Russian PNGs with expected dimensions, includes only those files and their README, and verifies the ZIP round trip with the existing `fflate` dependency. It refuses to overwrite an existing archive. **Do not create an empty placeholder ZIP** and do not upload this ZIP to Release Assets. Upload order for Community is Home → Logic game → Progress; account changes and upload are manual.
+`dist/brumalt-habr-screenshots.zip` contains only the five reviewed Russian PNGs and `README.md` with captions. Packing verifies dimensions and a byte-exact ZIP round trip using the existing `fflate` dependency. It refuses to overwrite an existing archive. This is an article bundle, not an installation package or Release asset. Publication to Habr or an Obsidian account is outside this capture operation.
 
-Run the existing typecheck, tests, lint, production build and package verification. Review the Git diff: no data.json, vault/profile, sidecar containing local paths, cache or temporary files. Only after the images pass review and PR CI is green, merge the documentation PR. Keep version/tag/release 0.3.5 untouched.
+## Validation and release preservation
 
-**Existing workflow caveat:** 0.3.5 was observed as a published regular release on 2026-11-16, while the current main-branch release job expects an existing release to be a Pre-release. Resolve that docs-only skip condition before merging, without changing or republishing the existing release. No workflow or release was modified during this blocked capture preparation.
+Local checks: typecheck, lint with zero warnings, **125 tests**, production build and package verification. Three new regression cases execute the actual release workflow script with a stub that rejects GitHub mutations: an existing published stable release or beta is skipped, and a draft still fails safely.
+
+The workflow previously required an existing release to be a pre-release. It now accepts either published kind and exits without creating or editing a release. Thus merging documentation with version 0.3.5 does not try to republish the existing ordinary release. No version, tag, game source, stylesheet or installation file was changed. `assets/walp.jpg` retains SHA-256 `ad668a055d212b32d020ad219206d32b68f4431bc7128d4a29655feee55bc8cd`.
+
+The rebuilt installation ZIP remains `d0769eedd18ecc4397a31075043d9dc81c3a17a640c514695e6597dd7aba8204`, matching the published 0.3.5 asset; all three installation-file hashes also match that release. Native acceptance here covers this Linux/Obsidian host and these screens; it does not establish mobile, screen-reader, other-theme or other-OS behavior.
