@@ -1,0 +1,16 @@
+node_modules/
+.test-build/
+main.js
+dist/
+*.log
+.obsidian/
+data.json
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store
+coverage/
+.cache/
+/walp.jpg

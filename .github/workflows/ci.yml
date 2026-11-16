@@ -1,0 +1,75 @@
+name: Checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run verify-package
+      - run: unzip -t dist/brumalt-0.3.3.zip
+  release:
+    needs: check
+    if: github.repository == 'zinverno/brumalt' && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    concurrency:
+      group: publish-brumalt
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run verify-package
+      - name: Publish verified first public beta
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node -p 'require("./manifest.json").version')
+          if gh release view "$version" >/dev/null 2>&1; then
+            test "$(gh release view "$version" --json isDraft,isPrerelease --jq '.isDraft == false and .isPrerelease == true')" = true
+            echo "Published beta $version already exists; refusing to replace it."
+            exit 0
+          fi
+          if gh api "repos/$GH_REPO/git/ref/tags/$version" > "$RUNNER_TEMP/existing-tag.json" 2>/dev/null; then
+            echo "Tag already exists without a release; inspect it before publishing."
+            exit 1
+          fi
+          gh release create "$version" --target "$GITHUB_SHA" --draft --prerelease \
+            --title "Brumalt $version — First Public Beta" --notes-file "docs/RELEASE-$version.md" \
+            dist/brumalt/main.js dist/brumalt/manifest.json dist/brumalt/styles.css \
+            "dist/brumalt-$version.zip" dist/SHA256SUMS
+          gh release download "$version" --dir "$RUNNER_TEMP/draft-assets"
+          for file in main.js manifest.json styles.css; do cmp "dist/brumalt/$file" "$RUNNER_TEMP/draft-assets/$file"; done
+          cmp "dist/brumalt-$version.zip" "$RUNNER_TEMP/draft-assets/brumalt-$version.zip"
+          cmp dist/SHA256SUMS "$RUNNER_TEMP/draft-assets/SHA256SUMS"
+          gh release edit "$version" --draft=false --prerelease --latest=false
+          test "$(gh api "repos/$GH_REPO/git/ref/tags/$version" --jq .object.sha)" = "$GITHUB_SHA"
+          gh release download "$version" --dir "$RUNNER_TEMP/published-assets"
+          for file in main.js manifest.json styles.css; do cmp "dist/brumalt/$file" "$RUNNER_TEMP/published-assets/$file"; done
+          cmp "dist/brumalt-$version.zip" "$RUNNER_TEMP/published-assets/brumalt-$version.zip"
+          unzip -t "$RUNNER_TEMP/published-assets/brumalt-$version.zip"
+          test "$(gh release view "$version" --json isDraft,isPrerelease --jq '.isDraft == false and .isPrerelease == true')" = true
+          gh release view "$version" --json url,tagName,isDraft,isPrerelease

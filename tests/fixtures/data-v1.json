@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "settings": {
+    "minutes": 5,
+    "enabled": [
+      "numbers",
+      "words"
+    ],
+    "practice": {
+      "numbers": {
+        "manual": true,
+        "level": 2
+      },
+      "location": {
+        "manual": false,
+        "level": 1
+      },
+      "words": {
+        "manual": false,
+        "level": 1
+      },
+      "sequence": {
+        "manual": false,
+        "level": 1
+      }
+    }
+  },
+  "adaptive": {
+    "numbers": {
+      "level": 3,
+      "recent": [
+        1,
+        0
+      ]
+    },
+    "location": {
+      "level": 2,
+      "recent": [
+        1,
+        0
+      ]
+    },
+    "words": {
+      "level": 6,
+      "recent": [
+        0.5555555555555556,
+        0.6666666666666666,
+        1
+      ]
+    },
+    "sequence": {
+      "level": 3,
+      "recent": [
+        1,
+        0
+      ]
+    }
+  },
+  "history": [
+    {
+      "id": "legacy-numbers",
+      "at": "2026-11-15T09:00:00.000Z",
+      "game": "numbers",
+      "rulesVersion": 1,
+      "mode": "session-adaptive",
+      "level": 3,
+      "params": {
+        "count": 6,
+        "showMs": 8000
+      },
+      "elementCount": 6,
+      "displayMs": 8003,
+      "responseMs": 2000,
+      "correct": 6,
+      "total": 6
+    },
+    {
+      "id": "legacy-location",
+      "at": "2026-11-15T09:00:00.000Z",
+      "game": "location",
+      "rulesVersion": 1,
+      "mode": "session-adaptive",
+      "level": 2,
+      "params": {
+        "count": 4,
+        "gridSize": 3,
+        "showMs": 8000
+      },
+      "elementCount": 4,
+      "displayMs": 8003,
+      "responseMs": 2000,
+      "correct": 1,
+      "total": 1
+    },
+    {
+      "id": "legacy-words",
+      "at": "2026-11-15T09:00:00.000Z",
+      "game": "words",
+      "rulesVersion": 1,
+      "mode": "session-adaptive",
+      "level": 6,
+      "params": {
+        "count": 9,
+        "distractors": 4,
+        "showMs": 10000
+      },
+      "elementCount": 9,
+      "displayMs": 10003,
+      "responseMs": 2000,
+      "correct": 9,
+      "total": 9
+    },
+    {
+      "id": "legacy-sequence",
+      "at": "2026-11-15T09:00:00.000Z",
+      "game": "sequence",
+      "rulesVersion": 1,
+      "mode": "session-adaptive",
+      "level": 3,
+      "params": {
+        "count": 5,
+        "tiles": 4,
+        "pulseMs": 600,
+        "gapMs": 250,
+        "showMs": 4750
+      },
+      "elementCount": 5,
+      "displayMs": 4753,
+      "responseMs": 2000,
+      "correct": 5,
+      "total": 5
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 3,
+  "settings": {
+    "minutes": 5,
+    "enabled": [
+      "numbers",
+      "words"
+    ],
+    "practice": {
+      "numbers": {
+        "manual": true,
+        "level": 2
+      },
+      "location": {
+        "manual": false,
+        "level": 1
+      },
+      "words": {
+        "manual": false,
+        "level": 1
+      },
+      "sequence": {
+        "manual": false,
+        "level": 1
+      },
+      "rule": {
+        "level": 1,
+        "manual": false
+      },
+      "order": {
+        "level": 1,
+        "manual": false
+      }
+    },
+    "goal": 3,
+    "reminder": {
+      "enabled": false,
+      "time": "18:00"
+    }
+  },
+  "adaptive": {
+    "numbers": {
+      "level": 3,
+      "recent": [
+        1,
+        0
+      ]
+    },
+    "location": {
+      "level": 2,
+      "recent": [
+        1,
+        0
+      ]
+    },
+    "words": {
+      "level": 6,
+      "recent": [
+        0.5555555555555556,
+        0.6666666666666666,
+        1
+      ]
+    },
+    "sequence": {
+      "level": 3,
+      "recent": [
+        1,
+        0
+      ]
+    },
+    "rule": {
+      "level": 1,
+      "recent": []
+    },
+    "order": {
+      "level": 1,
+      "recent": []
+    }
+  },
+  "history": [
+    {
+      "id": "legacy-numbers",
+      "at": "2026-11-15T09:00:00.000Z",
+      "game": "numbers",
+      "rulesVersion": 1,
+      "mode": "session-adaptive",
+      "level": 3,
+      "params": {
+        "count": 6,
+        "showMs": 8000
+      },
+      "elementCount": 6,
+      "displayMs": 8003,
+      "responseMs": 2000,
+      "correct": 6,
+      "total": 6,
+      "displayEnd": "timer",
+      "day": "2026-11-15",
+      "dayGoal": 3
+    },
+    {
+      "id": "old-number-2",
+      "at": "2026-11-15T09:00:00.000Z",
+      "game": "numbers",
+      "rulesVersion": 1,
+      "mode": "session-adaptive",
+      "level": 3,
+      "params": {
+        "count": 6,
+        "showMs": 8000
+      },
+      "elementCount": 6,
+      "displayMs": 8003,
+      "responseMs": 2000,
+      "correct": 6,
+      "total": 6,
+      "displayEnd": "timer",
+      "day": "2026-11-15",
+      "dayGoal": 3
+    },
+    {
+      "id": "legacy-words",
+      "at": "2026-11-15T09:00:00.000Z",
+      "game": "words",
+      "rulesVersion": 1,
+      "mode": "session-adaptive",
+      "level": 6,
+      "params": {
+        "count": 9,
+        "distractors": 4,
+        "showMs": 10000
+      },
+      "elementCount": 9,
+      "displayMs": 10003,
+      "responseMs": 2000,
+      "correct": 9,
+      "total": 9,
+      "displayEnd": "timer",
+      "day": "2026-11-15",
+      "dayGoal": 3
+    },
+    {
+      "id": "legacy-location",
+      "at": "2026-11-15T09:00:00.000Z",
+      "game": "location",
+      "rulesVersion": 1,
+      "mode": "session-adaptive",
+      "level": 2,
+      "params": {
+        "count": 4,
+        "gridSize": 3,
+        "showMs": 8000
+      },
+      "elementCount": 4,
+      "displayMs": 8003,
+      "responseMs": 2000,
+      "correct": 1,
+      "total": 1,
+      "displayEnd": "timer",
+      "day": "2026-11-14",
+      "dayGoal": 3
+    }
+  ],
+  "daily": {
+    "since": "2026-11-14",
+    "days": [
+      {
+        "day": "2026-11-14",
+        "count": 8,
+        "goal": 3,
+        "reminded": true
+      },
+      {
+        "day": "2026-11-15",
+        "count": 3,
+        "goal": 3,
+        "reminded": false
+      }
+    ],
+    "schedule": [
+      {
+        "from": "2026-11-14",
+        "goal": 3
+      }
+    ],
+    "reminderOffered": false
+  }
+}
