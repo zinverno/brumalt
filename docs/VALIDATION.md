@@ -64,6 +64,12 @@ The local `.git` path is read-only; source staging/history uses separate tempora
 
 [Checks](https://github.com/zinverno/brumalt/actions) runs full npm install, types, tests, production build and archive verification on **Node 22/24** for pushes and pull requests. Only a main push can reach the release job, after both check jobs pass. It builds and verifies assets, uploads a temporary draft, downloads and byte-compares them, publishes a **Pre-release**, then downloads/comparisons again and checks tag/commit identity and release state. Existing published releases are never overwritten. No catalogue submission is automated.
 
+### Publication gate: blocked
+
+Source publication was attempted through the authenticated `zinverno` connection. The first request suffered a transport failure; a read-back confirmed the repository was still empty. A repeated create-file request then returned **HTTP 403 — Resource not accessible by integration**. The integration reports no installed GitHub App accounts. Local `gh` / Git also cannot connect (DNS resolution failure). No alternate account or force push was used.
+
+Consequently **source push, hosted CI, repository About/topics and Release publication are not completed**. The prepared workflow has not run on GitHub and no public release/download is claimed. Access to the repository must be granted to the connected GitHub application before continuation. A complete local source-history bundle is available at `dist/brumalt-0.3.3-source.bundle`; it is not the installation ZIP and is not a release asset.
+
 Hosted run/release status must be read from GitHub; local results alone are not a claim of successful publication. Release attachments are the three separate install files, ZIP and SHA256SUMS. Root manifest and approved cover are included in source.
 
 ## Native and remaining limits
